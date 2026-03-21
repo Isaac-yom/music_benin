@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mentions légales — BéninMusic</title>
+  <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .legal-page { max-width: 800px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+    .legal-hero { margin-bottom: 3rem; }
+    .legal-hero h1 { font-family: 'Poppins', sans-serif; font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 800; margin-bottom: 0.5rem; }
+    .legal-hero p { color: var(--text-light); font-size: 0.9rem; }
+    .legal-toc {
+      background: #f8f9fb; border-radius: 16px; padding: 1.5rem 2rem;
+      margin-bottom: 3rem; border-left: 4px solid var(--green);
+    }
+    .legal-toc-title { font-family: 'Syne', sans-serif; font-weight: 700; margin-bottom: 0.8rem; font-size: 0.95rem; }
+    .legal-toc a { display: block; font-size: 0.88rem; color: var(--green); margin-bottom: 0.4rem; text-decoration: none; }
+    .legal-toc a:hover { text-decoration: underline; }
+    .legal-section { margin-bottom: 3rem; scroll-margin-top: 100px; }
+    .legal-section h2 { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #f0f0f0; }
+    .legal-section h3 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 600; margin: 1.2rem 0 0.5rem; color: #333; }
+    .legal-section p, .legal-section li { font-family: 'Figtree', sans-serif; font-size: 0.92rem; color: #555; line-height: 1.8; margin-bottom: 0.8rem; }
+    .legal-section ul { padding-left: 1.5rem; }
+    .legal-section li { margin-bottom: 0.4rem; }
+    .legal-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,120,71,0.08); border-radius: 999px; padding: 0.3rem 0.8rem; font-size: 0.78rem; font-weight: 600; color: var(--green); margin-bottom: 1rem; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--text-light); font-size: 0.85rem; text-decoration: none; margin-bottom: 2rem; }
+    .back-link:hover { color: var(--green); }
+  </style>
+</head>
+<body>
+
+  <div class="music-quote-strip" style="height:4px;min-height:4px;"></div>
+  <div id="app-header"></div>
+
+  <div class="legal-page">
+    <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Retour à l'accueil</a>
+
+    <div class="legal-hero">
+      <h1>Mentions légales <span class="text-gradient">& CGU</span></h1>
+      <p>Dernière mise à jour : Mars 2026 · BéninMusic</p>
+    </div>
+
+    <!-- TABLE DES MATIÈRES -->
+    <div class="legal-toc">
+      <div class="legal-toc-title">Sommaire</div>
+      <a href="#editeur">1. Éditeur du site</a>
+      <a href="#hebergement">2. Hébergement</a>
+      <a href="#cgu">3. Conditions générales d'utilisation</a>
+      <a href="#propriete">4. Propriété intellectuelle</a>
+      <a href="#responsabilite">5. Responsabilité</a>
+      <a href="#cookies">6. Politique des cookies</a>
+      <a href="#contact">7. Contact</a>
+    </div>
+
+    <!-- 1. ÉDITEUR -->
+    <section class="legal-section" id="editeur">
+      <div class="legal-badge"><i class="fas fa-building"></i> Éditeur</div>
+      <h2>1. Éditeur du site</h2>
+      <p>Le site BéninMusic (<strong>sitemusicbenin.vercel.app</strong>) est édité par :</p>
+      <ul>
+        <li><strong>Responsable de publication :</strong> Isaac Yom</li>
+        <li><strong>Site web :</strong> <a href="https://isaac-myportfolio.yomservice.com" style="color:var(--green);">isaac-myportfolio.yomservice.com</a></li>
+        <li><strong>Pays :</strong> Bénin</li>
+        <li><strong>Contact :</strong> Via le formulaire disponible sur le portfolio</li>
+      </ul>
+    </section>
+
+    <!-- 2. HÉBERGEMENT -->
+    <section class="legal-section" id="hebergement">
+      <div class="legal-badge"><i class="fas fa-server"></i> Hébergement</div>
+      <h2>2. Hébergement</h2>
+      <p>Le site est hébergé par :</p>
+      <ul>
+        <li><strong>Frontend :</strong> Vercel Inc. · 340 Pine Street, Suite 701, San Francisco, CA 94104, USA · <a href="https://vercel.com" style="color:var(--green);">vercel.com</a></li>
+        <li><strong>Base de données & authentification :</strong> Supabase Inc. · <a href="https://supabase.com" style="color:var(--green);">supabase.com</a></li>
+        <li><strong>Stockage des médias :</strong> Supabase Storage (hébergé sur AWS S3)</li>
+      </ul>
+    </section>
+
+    <!-- 3. CGU -->
+    <section class="legal-section" id="cgu">
+      <div class="legal-badge"><i class="fas fa-file-contract"></i> CGU</div>
+      <h2>3. Conditions générales d'utilisation</h2>
+
+      <h3>3.1 Acceptation des conditions</h3>
+      <p>En accédant à BéninMusic et en créant un compte, vous acceptez les présentes CGU. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser la plateforme.</p>
+
+      <h3>3.2 Inscription et compte</h3>
+      <ul>
+        <li>Vous devez avoir au moins 13 ans pour créer un compte.</li>
+        <li>Vous êtes responsable de la confidentialité de vos identifiants.</li>
+        <li>Un seul compte par personne est autorisé.</li>
+        <li>Toute tentative de créer de faux comptes ou d'usurper l'identité d'une autre personne est interdite.</li>
+      </ul>
+
+      <h3>3.3 Contenu publié par les utilisateurs</h3>
+      <ul>
+        <li>Vous êtes seul responsable des publications que vous effectuez sur la plateforme.</li>
+        <li>Il est interdit de publier du contenu illégal, haineux, diffamatoire, obscène ou portant atteinte aux droits de tiers.</li>
+        <li>Il est interdit de publier du contenu protégé par le droit d'auteur sans autorisation.</li>
+        <li>BéninMusic se réserve le droit de supprimer tout contenu contraire à ces règles sans préavis.</li>
+      </ul>
+
+      <h3>3.4 Droits sur le contenu</h3>
+      <p>En publiant sur BéninMusic, vous accordez à la plateforme une licence non exclusive, mondiale et gratuite pour afficher votre contenu sur le site. Vous conservez tous vos droits de propriété intellectuelle.</p>
+
+      <h3>3.5 Suspension et suppression de compte</h3>
+      <p>BéninMusic se réserve le droit de suspendre ou supprimer tout compte en cas de violation des présentes CGU, sans notification préalable et sans indemnité.</p>
+    </section>
+
+    <!-- 4. PROPRIÉTÉ INTELLECTUELLE -->
+    <section class="legal-section" id="propriete">
+      <div class="legal-badge"><i class="fas fa-copyright"></i> Propriété intellectuelle</div>
+      <h2>4. Propriété intellectuelle</h2>
+      <p>Le design, le code, les textes et les éléments graphiques du site BéninMusic sont la propriété exclusive d'Isaac Yom, sauf mention contraire.</p>
+      <p>Les images des artistes proviennent de sources publiques. Si vous êtes détenteur de droits sur une image et souhaitez son retrait, contactez-nous via le portfolio.</p>
+      <p>Toute reproduction, modification ou utilisation commerciale du contenu du site sans autorisation préalable est strictement interdite.</p>
+    </section>
+
+    <!-- 5. RESPONSABILITÉ -->
+    <section class="legal-section" id="responsabilite">
+      <div class="legal-badge"><i class="fas fa-shield-alt"></i> Responsabilité</div>
+      <h2>5. Limitation de responsabilité</h2>
+      <p>BéninMusic s'efforce de maintenir le site accessible et fonctionnel, mais ne peut garantir :</p>
+      <ul>
+        <li>La disponibilité permanente du service</li>
+        <li>L'exactitude de toutes les informations publiées par les utilisateurs</li>
+        <li>L'absence de tout bug ou erreur technique</li>
+      </ul>
+      <p>BéninMusic ne saurait être tenu responsable des dommages directs ou indirects résultant de l'utilisation ou de l'impossibilité d'utiliser le site.</p>
+    </section>
+
+    <!-- 6. COOKIES -->
+    <section class="legal-section" id="cookies">
+      <div class="legal-badge"><i class="fas fa-cookie-bite"></i> Cookies</div>
+      <h2>6. Politique des cookies</h2>
+
+      <h3>6.1 Qu'est-ce qu'un cookie ?</h3>
+      <p>Un cookie est un petit fichier texte stocké sur votre appareil lors de votre visite sur un site web. Il permet au site de mémoriser certaines informations lors de vos visites.</p>
+
+      <h3>6.2 Cookies utilisés sur BéninMusic</h3>
+      <ul>
+        <li><strong>Cookies d'authentification (essentiels) :</strong> Gérés par Supabase pour maintenir votre session. Nécessaires au fonctionnement du site.</li>
+        <li><strong>Cookies de préférences :</strong> Stockés dans le localStorage pour mémoriser vos préférences (consentement cookies, thème, etc.).</li>
+        <li><strong>Cookies tiers :</strong> Google Fonts et les CDN utilisés peuvent déposer leurs propres cookies techniques.</li>
+      </ul>
+
+      <h3>6.3 Gestion de vos cookies</h3>
+      <p>Vous pouvez accepter ou refuser les cookies non essentiels via le bandeau qui apparaît lors de votre première visite. Vous pouvez également configurer votre navigateur pour refuser les cookies, mais cela pourrait affecter certaines fonctionnalités du site.</p>
+    </section>
+
+    <!-- 7. CONTACT -->
+    <section class="legal-section" id="contact">
+      <div class="legal-badge"><i class="fas fa-envelope"></i> Contact</div>
+      <h2>7. Contact</h2>
+      <p>Pour toute question relative aux présentes mentions légales, à vos données personnelles ou à un contenu que vous souhaitez faire retirer :</p>
+      <p>📎 <a href="https://isaac-myportfolio.yomservice.com" target="_blank" rel="noopener noreferrer" style="color:var(--green);">isaac-myportfolio.yomservice.com</a></p>
+      <p>Nous nous engageons à répondre dans un délai de 72 heures ouvrées.</p>
+    </section>
+
+    <div style="text-align:center;padding:2rem;border-top:2px solid #f0f0f0;margin-top:2rem;">
+      <a href="privacy.html" style="color:var(--green);font-weight:600;font-size:0.9rem;">Voir aussi : Politique de confidentialité →</a>
+    </div>
+  </div>
+
+  <div id="app-footer"></div>
+  <div id="cookie-slot"></div>
+  <script src="js/components.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/analytics.js"></script>
+</body>
+</html>

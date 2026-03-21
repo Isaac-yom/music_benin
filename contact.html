@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — BéninMusic</title>
+  <link rel="canonical" href="https://musicbenin.vercel.app/contact.html">
+  <meta name="description" content="Contactez l'équipe BéninMusic. Question, partenariat, signalement — nous vous répondons rapidement.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Contact — BéninMusic">
+  <meta property="og:description" content="Contactez l'équipe BéninMusic. Question, partenariat, signalement — nous vous répondons rapidement.">
+  <meta property="og:url" content="https://musicbenin.vercel.app/contact.html">
+  <meta property="og:site_name" content="BéninMusic">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Contact — BéninMusic">
+  <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .contact-page { max-width: 960px; margin: 0 auto; padding: 4rem 1.5rem; }
+    .contact-hero { text-align: center; margin-bottom: 3.5rem; }
+    .contact-hero h1 { font-family: 'Poppins', sans-serif; font-size: clamp(2rem,4vw,3rem); font-weight: 800; margin-bottom: 0.8rem; }
+    .contact-hero p { color: var(--text-light); font-size: 1rem; max-width: 500px; margin: 0 auto; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+    @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } }
+    .contact-form-card { background: #fff; border-radius: 20px; padding: 2.5rem; box-shadow: 0 4px 30px rgba(0,0,0,0.08); }
+    .contact-form-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 1.8rem; display: flex; align-items: center; gap: 0.6rem; color: var(--dark); }
+    .c-field { margin-bottom: 1.2rem; }
+    .c-label { display: block; font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #888; margin-bottom: 0.45rem; }
+    .c-input-wrap { position: relative; }
+    .c-input, .c-textarea, .c-select {
+      width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #eee;
+      border-radius: 12px; font-family: 'Figtree', sans-serif; font-size: 0.92rem;
+      color: var(--dark); background: #fafafa; box-sizing: border-box;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .c-input:focus, .c-textarea:focus, .c-select:focus { outline: none; border-color: var(--green); background: #fff; box-shadow: 0 0 0 3px rgba(0,120,71,0.1); }
+    .c-input.has-icon { padding-right: 2.6rem; }
+    .c-input.error, .c-textarea.error, .c-select.error { border-color: var(--red) !important; background: rgba(206,17,38,0.02) !important; box-shadow: 0 0 0 3px rgba(206,17,38,0.08) !important; }
+    .c-input.ok { border-color: var(--green) !important; }
+    .c-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; pointer-events: none; }
+    .c-textarea { resize: vertical; min-height: 130px; }
+    .c-error { font-size: 0.78rem; color: var(--red); margin-top: 5px; display: none; align-items: center; gap: 5px; }
+    .c-error.show { display: flex; animation: errShake 0.3s ease; }
+    @keyframes errShake { 0%,100%{margin-left:0} 25%{margin-left:-4px} 75%{margin-left:4px} }
+    .c-submit {
+      width: 100%; padding: 0.9rem; background: var(--green); color: #fff;
+      border: none; border-radius: 999px; font-family: 'Syne', sans-serif;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.25s;
+      display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 0.5rem;
+    }
+    .c-submit:hover { background: #005f38; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,120,71,0.3); }
+    .c-submit:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+    .contact-info { display: flex; flex-direction: column; gap: 1.2rem; }
+    .contact-info-card { background: #fff; border-radius: 16px; padding: 1.4rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); display: flex; align-items: flex-start; gap: 1rem; transition: transform 0.2s; text-decoration: none; color: inherit; }
+    .contact-info-card:hover { transform: translateY(-3px); }
+    .ci-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .ci-text h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--dark); margin-bottom: 0.25rem; }
+    .ci-text p, .ci-text a { font-size: 0.88rem; color: var(--text-light); text-decoration: none; display: block; }
+    .wa-card { background: #128C7E; }
+    .wa-card .ci-text h4 { color: #fff; }
+    .wa-card .ci-text a { color: rgba(255,255,255,0.95); }
+    .wa-card .ci-text p { color: rgba(255,255,255,0.7); font-size: 0.78rem; }
+    .contact-success { display: none; text-align: center; padding: 2.5rem 1.5rem; background: rgba(0,120,71,0.05); border-radius: 16px; border: 1.5px solid rgba(0,120,71,0.2); margin-top: 1rem; }
+    .contact-success.show { display: block; }
+    .contact-success i { font-size: 3rem; color: var(--green); margin-bottom: 1rem; display: block; }
+    .contact-success h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .contact-success p { color: var(--text-light); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <div class="music-quote-strip" style="display:none;"></div>
+  <div id="app-header" data-active="contact"></div>
+
+  <div class="contact-page">
+
+    <div class="contact-hero">
+      <h1>
+        <span class="text-gradient">Contactez-nous</span>
+        <i class="fas fa-envelope" style="font-size:1.6rem;color:var(--green);vertical-align:middle;margin-left:0.5rem;"></i>
+      </h1>
+      <p>Une question, une suggestion, un partenariat ? On est à votre écoute et on vous répond rapidement.</p>
+    </div>
+
+    <div class="contact-grid">
+
+      <!-- ── Formulaire ── -->
+      <div class="contact-form-card">
+        <div class="contact-form-title">
+          <i class="fas fa-paper-plane" style="color:var(--green);"></i>
+          Envoyer un message
+        </div>
+
+        <form id="contact-form" novalidate>
+
+          <!-- Nom -->
+          <div class="c-field">
+            <label class="c-label" for="c-name">Nom complet *</label>
+            <div class="c-input-wrap">
+              <input class="c-input has-icon" type="text" id="c-name"
+                placeholder="Ex : Isaac Yomakou" autocomplete="name" maxlength="80">
+              <i class="c-icon" id="icon-name"></i>
+            </div>
+            <div class="c-error" id="err-name">
+              <i class="fas fa-exclamation-circle"></i>
+              <span id="err-name-txt"></span>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="c-field">
+            <label class="c-label" for="c-email">Adresse e-mail *</label>
+            <div class="c-input-wrap">
+              <input class="c-input has-icon" type="email" id="c-email"
+                placeholder="votre@email.com" autocomplete="email">
+              <i class="c-icon" id="icon-email"></i>
+            </div>
+            <div class="c-error" id="err-email">
+              <i class="fas fa-exclamation-circle"></i>
+              <span id="err-email-txt"></span>
+            </div>
+          </div>
+
+          <!-- Sujet -->
+          <div class="c-field">
+            <label class="c-label" for="c-subject">Sujet *</label>
+            <select class="c-select" id="c-subject">
+              <option value="">-- Choisir un sujet --</option>
+              <option value="question">Question générale</option>
+              <option value="partenariat">Partenariat / Collaboration</option>
+              <option value="artiste">Ajouter un artiste</option>
+              <option value="bug">Signaler un bug</option>
+              <option value="autre">Autre</option>
+            </select>
+            <div class="c-error" id="err-subject">
+              <i class="fas fa-exclamation-circle"></i>
+              <span id="err-subject-txt"></span>
+            </div>
+          </div>
+
+          <!-- Message -->
+          <div class="c-field">
+            <label class="c-label" for="c-message">
+              Message *
+              <span id="msg-counter" style="font-weight:400;color:var(--gray-3);font-size:0.72rem;text-transform:none;letter-spacing:0;"> — 0/20 min</span>
+            </label>
+            <textarea class="c-textarea" id="c-message"
+              placeholder="Décrivez votre demande en détail (min. 20 caractères)…" maxlength="2000"></textarea>
+            <div class="c-error" id="err-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <span id="err-message-txt"></span>
+            </div>
+          </div>
+
+          <button class="c-submit" type="submit" id="c-btn">
+            <i class="fas fa-paper-plane"></i> Envoyer le message
+          </button>
+        </form>
+
+        <div class="contact-success" id="contact-success">
+          <i class="fas fa-check-circle"></i>
+          <h3>Message envoyé !</h3>
+          <p>Merci pour votre message. Nous vous répondrons dans les plus brefs délais.</p>
+        </div>
+      </div>
+
+      <!-- ── Infos de contact ── -->
+      <div class="contact-info">
+
+        <a href="https://wa.me/2290158507828" target="_blank" rel="noopener" class="contact-info-card wa-card">
+          <div class="ci-icon" style="background:rgba(255,255,255,0.2);">
+            <i class="fab fa-whatsapp" style="color:#fff;font-size:1.3rem;"></i>
+          </div>
+          <div class="ci-text">
+            <h4>WhatsApp</h4>
+            <a href="https://wa.me/2290158507828">+229 01 58 50 78 28</a>
+            <p>Réponse rapide · Cliquez pour discuter</p>
+          </div>
+        </a>
+
+        <div class="contact-info-card">
+          <div class="ci-icon" style="background:rgba(0,120,71,0.1);">
+            <i class="fas fa-envelope" style="color:var(--green);"></i>
+          </div>
+          <div class="ci-text">
+            <h4>E-mail</h4>
+            <a href="mailto:isaacyomakou@gmail.com">isaacyomakou@gmail.com</a>
+            <p>Réponse sous 24h</p>
+          </div>
+        </div>
+
+        <div class="contact-info-card">
+          <div class="ci-icon" style="background:rgba(206,17,38,0.08);">
+            <i class="fas fa-map-marker-alt" style="color:var(--red);"></i>
+          </div>
+          <div class="ci-text">
+            <h4>Localisation</h4>
+            <p>Cotonou, Bénin 🇧🇯</p>
+            <p>& Paris, France 🇫🇷</p>
+          </div>
+        </div>
+
+        <div class="contact-info-card">
+          <div class="ci-icon" style="background:rgba(252,209,22,0.15);">
+            <i class="fas fa-clock" style="color:#997a00;"></i>
+          </div>
+          <div class="ci-text">
+            <h4>Disponibilité</h4>
+            <p>Lun – Ven : 8h – 20h (WAT)</p>
+            <p>Samedi : 9h – 16h</p>
+          </div>
+        </div>
+
+        <div class="contact-info-card">
+          <div class="ci-icon" style="background:rgba(0,120,71,0.1);">
+            <i class="fas fa-share-alt" style="color:var(--green);"></i>
+          </div>
+          <div class="ci-text">
+            <h4>Réseaux sociaux</h4>
+            <div style="display:flex;gap:1rem;margin-top:0.6rem;">
+              <a href="https://wa.me/2290158507828" target="_blank" rel="noopener" style="color:#25D366;font-size:1.4rem;"><i class="fab fa-whatsapp"></i></a>
+              <a href="#" style="color:#1877F2;font-size:1.4rem;"><i class="fab fa-facebook"></i></a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="app-footer"></div>
+  <div id="cookie-slot"></div>
+
+  <script src="js/components.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/analytics.js"></script>
+  <script>
+  // ============================================================
+  // VALIDATION PROFESSIONNELLE
+  // ============================================================
+
+  function fieldOk(inputId, iconId, errId) {
+    var el = document.getElementById(inputId);
+    if (el) { el.classList.remove('error'); el.classList.add('ok'); }
+    var ic = document.getElementById(iconId);
+    if (ic) { ic.className = 'c-icon fas fa-check-circle'; ic.style.color = 'var(--green)'; }
+    var er = document.getElementById(errId);
+    if (er) er.classList.remove('show');
+    return true;
+  }
+
+  function fieldErr(inputId, iconId, errId, errTxtId, msg) {
+    var el = document.getElementById(inputId);
+    if (el) { el.classList.add('error'); el.classList.remove('ok'); }
+    var ic = document.getElementById(iconId);
+    if (ic) { ic.className = 'c-icon fas fa-times-circle'; ic.style.color = 'var(--red)'; }
+    var er = document.getElementById(errId);
+    if (er) { er.classList.remove('show'); void er.offsetWidth; er.classList.add('show'); }
+    var tx = document.getElementById(errTxtId);
+    if (tx) tx.textContent = msg;
+    return false;
+  }
+
+  function validateName() {
+    var v = document.getElementById('c-name').value.trim();
+    if (!v)            return fieldErr('c-name','icon-name','err-name','err-name-txt','Le nom est obligatoire.');
+    if (v.length < 2)  return fieldErr('c-name','icon-name','err-name','err-name-txt','Au moins 2 caractères requis (ex : "Al" ou "Isaac").');
+    if (v.length > 80) return fieldErr('c-name','icon-name','err-name','err-name-txt','Nom trop long (maximum 80 caractères).');
+    if (!/^[a-zA-ZÀ-ÿ\s\-'\.]+$/.test(v))
+      return fieldErr('c-name','icon-name','err-name','err-name-txt','Caractères non autorisés. Lettres, espaces et tirets seulement.');
+    return fieldOk('c-name','icon-name','err-name');
+  }
+
+  function validateEmail() {
+    var v = document.getElementById('c-email').value.trim();
+    if (!v) return fieldErr('c-email','icon-email','err-email','err-email-txt','L\'adresse e-mail est obligatoire.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v))
+      return fieldErr('c-email','icon-email','err-email','err-email-txt','Format invalide. Exemple : vous@exemple.com');
+    if (v.length > 254) return fieldErr('c-email','icon-email','err-email','err-email-txt','Adresse e-mail trop longue.');
+    return fieldOk('c-email','icon-email','err-email');
+  }
+
+  function validateSubject() {
+    var v = document.getElementById('c-subject').value;
+    if (!v) {
+      document.getElementById('c-subject').classList.add('error');
+      var er = document.getElementById('err-subject');
+      er.classList.remove('show'); void er.offsetWidth; er.classList.add('show');
+      document.getElementById('err-subject-txt').textContent = 'Veuillez choisir un sujet.';
+      return false;
+    }
+    document.getElementById('c-subject').classList.remove('error');
+    document.getElementById('err-subject').classList.remove('show');
+    return true;
+  }
+
+  function validateMessage() {
+    var v = document.getElementById('c-message').value.trim();
+    if (!v)              return fieldErr('c-message',null,'err-message','err-message-txt','Le message est obligatoire.');
+    if (v.length < 20)   return fieldErr('c-message',null,'err-message','err-message-txt','Message trop court — minimum 20 caractères (' + v.length + '/20).');
+    if (v.length > 2000) return fieldErr('c-message',null,'err-message','err-message-txt','Message trop long — maximum 2000 caractères.');
+    var el = document.getElementById('c-message');
+    el.classList.remove('error'); el.classList.add('ok');
+    document.getElementById('err-message').classList.remove('show');
+    return true;
+  }
+
+  // Validation live au blur
+  document.getElementById('c-name').addEventListener('blur', validateName);
+  document.getElementById('c-name').addEventListener('input', function() {
+    if (this.value.trim().length >= 2) validateName();
+  });
+  document.getElementById('c-email').addEventListener('blur', validateEmail);
+  document.getElementById('c-email').addEventListener('input', function() {
+    if (this.value.includes('@')) validateEmail();
+  });
+  document.getElementById('c-subject').addEventListener('change', validateSubject);
+
+  // Compteur message
+  document.getElementById('c-message').addEventListener('input', function() {
+    var len     = this.value.trim().length;
+    var counter = document.getElementById('msg-counter');
+    if (counter) {
+      counter.textContent = ' — ' + len + '/20 min';
+      counter.style.color = len < 20 ? 'var(--red)' : len > 1800 ? '#997a00' : 'var(--green)';
+    }
+    if (len >= 20) {
+      this.classList.remove('error'); this.classList.add('ok');
+      document.getElementById('err-message').classList.remove('show');
+    }
+  });
+  document.getElementById('c-message').addEventListener('blur', validateMessage);
+
+  // Soumission
+  document.getElementById('contact-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    var okName    = validateName();
+    var okEmail   = validateEmail();
+    var okSubject = validateSubject();
+    var okMessage = validateMessage();
+
+    if (!okName || !okEmail || !okSubject || !okMessage) {
+      var firstErr = document.querySelector('.c-input.error, .c-select.error, .c-textarea.error');
+      if (firstErr) firstErr.focus();
+      if (typeof showToast === 'function') showToast('Corrige les erreurs en rouge avant d\'envoyer.', 'error');
+      return;
+    }
+
+    var btn     = document.getElementById('c-btn');
+    var name    = document.getElementById('c-name').value.trim();
+    var email   = document.getElementById('c-email').value.trim();
+    var subject = document.getElementById('c-subject').value;
+    var message = document.getElementById('c-message').value.trim();
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours…';
+
+    var res = await _supabase.from('contact_messages').insert({ name, email, subject, message });
+
+    if (res.error) {
+      if (typeof showToast === 'function') showToast('Erreur serveur : ' + res.error.message, 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer le message';
+      return;
+    }
+
+    document.getElementById('contact-form').style.display = 'none';
+    document.getElementById('contact-success').classList.add('show');
+    if (typeof showToast === 'function') showToast('Message envoyé avec succès ! ✓');
+  });
+  </script>
+</body>
+</html>

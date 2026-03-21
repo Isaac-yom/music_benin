@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil | Bénin Music Social</title>
+
+  <meta name="robots" content="index, follow">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+
+  <!-- Alpine JS -->
+  <script src="https://unpkg.com/alpinejs" defer></script>
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* ── PROFILE PAGE STYLES ── */
+    .profile-page {
+      min-height: 100vh;
+      background: #f8f9fb;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0 40 L40 0' stroke='%23007847' stroke-width='1' opacity='0.07'/%3E%3C/svg%3E");
+      padding-bottom: 4rem;
+    }
+
+    /* ── COVER ── */
+    .profile-cover {
+      position: relative;
+      height: 220px;
+      background: linear-gradient(135deg, #007847 0%, #1a1a1a 50%, #CE1126 100%);
+      overflow: hidden;
+    }
+
+    .profile-cover-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.6;
+    }
+
+    .profile-cover-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.5) 100%);
+    }
+
+    /* ── PROFILE HEADER CARD ── */
+    .profile-header-card {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      position: relative;
+    }
+
+    .profile-avatar-wrap {
+      position: relative;
+      display: inline-block;
+      margin-top: -56px;
+      margin-bottom: 0.5rem;
+    }
+
+    .profile-avatar {
+      width: 112px;
+      height: 112px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      object-fit: cover;
+      background: #007847;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      display: block;
+    }
+
+    .profile-verified {
+      position: absolute;
+      bottom: 6px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      background: #007847;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 0.6rem;
+    }
+
+    .profile-avatar-edit {
+      position: absolute;
+      bottom: 4px;
+      right: 2px;
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #007847, #FCD116);
+      border-radius: 50%;
+      border: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #111;
+      font-size: 0.65rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .profile-avatar-edit:hover {
+      transform: scale(1.15);
+    }
+
+    .profile-meta {
+      margin-top: 0.4rem;
+    }
+
+    .profile-display-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #111;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.1rem;
+    }
+
+    .profile-username {
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 0.6rem;
+    }
+
+    .profile-bio {
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.97rem;
+      color: #444;
+      line-height: 1.6;
+      max-width: 520px;
+      margin-bottom: 0.8rem;
+    }
+
+    .profile-location, .profile-website {
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.85rem;
+      color: #777;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-right: 1.2rem;
+    }
+
+    .profile-website a {
+      color: #007847;
+      text-decoration: none;
+    }
+
+    .profile-website a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── STATS ── */
+    .profile-stats {
+      display: flex;
+      gap: 2rem;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #111;
+      display: block;
+    }
+
+    .stat-label {
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.78rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── ACTIONS ── */
+    .profile-actions {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin: 1rem 0 1.5rem;
+    }
+
+    .btn-edit-profile {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0.6rem 1.6rem;
+      border-radius: 999px;
+      border: 2px solid #FCD116;
+      background: transparent;
+      color: #111;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn-edit-profile:hover {
+      background: linear-gradient(90deg, #007847, #FCD116, #CE1126);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .btn-follow {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0.6rem 1.6rem;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(90deg, #007847, #FCD116, #CE1126);
+      color: #111;
+      cursor: pointer;
+      transition: opacity 0.25s ease, transform 0.2s ease;
+    }
+
+    .btn-follow:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
+    .btn-follow.following {
+      background: transparent;
+      border: 2px solid #ddd;
+      color: #555;
+    }
+
+    /* ── TABS ── */
+    .profile-tabs {
+      max-width: 860px;
+      margin: 0 auto 1.5rem;
+      padding: 0 1.5rem;
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid #eee;
+    }
+
+    .tab-btn {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 0.75rem 1.4rem;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      color: #888;
+      cursor: pointer;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .tab-btn.active {
+      color: #007847;
+      border-bottom-color: #007847;
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: #333;
+    }
+
+    /* ── TAB CONTENT ── */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ── POSTS FEED ── */
+    .profile-feed {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .post-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .post-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 35px rgba(0,0,0,0.1);
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.9rem;
+    }
+
+    .post-author {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .post-author-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .post-author-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .post-time {
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.78rem;
+      color: #aaa;
+    }
+
+    .post-content {
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.97rem;
+      color: #333;
+      line-height: 1.65;
+      margin-bottom: 1rem;
+    }
+
+    .post-image {
+      width: 100%;
+      border-radius: 12px;
+      object-fit: cover;
+      max-height: 380px;
+      margin-bottom: 1rem;
+    }
+
+    .post-actions {
+      display: flex;
+      gap: 1.5rem;
+      padding-top: 0.8rem;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .post-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: none;
+      border: none;
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.85rem;
+      color: #888;
+      cursor: pointer;
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .post-action-btn:hover {
+      background: #f5f5f5;
+      color: #111;
+    }
+
+    .post-action-btn.liked {
+      color: #CE1126;
+    }
+
+    .post-action-btn.liked i {
+      animation: heartPop 0.3s ease;
+    }
+
+    @keyframes heartPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.4); }
+      100% { transform: scale(1); }
+    }
+
+    /* ── EDIT MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+    }
+
+    .modal-overlay.open .modal-box {
+      transform: translateY(0);
+    }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: #888;
+      cursor: pointer;
+      padding: 0.3rem;
+      border-radius: 6px;
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover { color: #111; }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-label {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 0.4rem;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid #eee;
+      border-radius: 10px;
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.95rem;
+      color: #111;
+      background: #fafafa;
+      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #007847;
+      background: #fff;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .btn-save {
+      width: 100%;
+      padding: 0.85rem;
+      background: linear-gradient(90deg, #007847, #FCD116, #CE1126);
+      border: none;
+      border-radius: 999px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #111;
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      margin-top: 0.5rem;
+    }
+
+    .btn-save:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+
+    .btn-save:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1.5rem;
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    .empty-text {
+      font-family: 'Figtree', sans-serif;
+      color: #999;
+      font-size: 1rem;
+    }
+
+    /* ── SKELETON ── */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #111;
+      color: #fff;
+      padding: 0.8rem 1.6rem;
+      border-radius: 999px;
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.9rem;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast-success { border-left: 4px solid #007847; }
+    .toast-error   { border-left: 4px solid #CE1126; }
+    .toast-info    { border-left: 4px solid #FCD116; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .profile-stats { gap: 1.2rem; }
+      .profile-cover { height: 160px; }
+      .profile-avatar { width: 88px; height: 88px; }
+      .profile-display-name { font-size: 1.3rem; }
+      .tab-btn { padding: 0.65rem 0.9rem; font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div id="app-header"></div> 
+
+  <!-- COVER -->
+  <div class="profile-cover" id="profile-cover">
+    <div class="profile-cover-overlay"></div>
+  </div>
+
+  <!-- PROFILE HEADER -->
+  <div class="profile-page">
+    <div class="profile-header-card">
+
+      <!-- Avatar -->
+      <div class="profile-avatar-wrap">
+        <img id="profile-avatar-img"
+             src="https://ui-avatars.com/api/?name=...&background=007847&color=fff&bold=true&size=128"
+             alt="Avatar"
+             class="profile-avatar">
+        <div class="profile-avatar-edit" id="btn-edit-avatar" title="Changer la photo" style="display:none;">
+          <i class="fas fa-camera"></i>
+        </div>
+        <!-- Input caché pour upload avatar -->
+        <input type="file" id="avatar-file-input" accept="image/jpeg,image/png,image/webp"
+               style="display:none;" aria-label="Changer la photo de profil">
+      </div>
+
+      <!-- Infos -->
+      <div class="profile-meta">
+        <h1 class="profile-display-name" id="profile-display-name">
+          <span class="skeleton" style="width:200px;height:28px;display:inline-block;"></span>
+        </h1>
+        <p class="profile-username" id="profile-username"></p>
+        <p class="profile-bio" id="profile-bio"></p>
+        <div id="profile-links"></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="profile-stats">
+        <div class="stat-item">
+          <span class="stat-value" id="stat-posts">—</span>
+          <span class="stat-label">Publications</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-followers">—</span>
+          <span class="stat-label">Abonnés</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-following">—</span>
+          <span class="stat-label">Abonnements</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="profile-actions" id="profile-actions">
+        <!-- Injecté via JS selon si c'est le profil de l'utilisateur connecté ou non -->
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="profile-tabs">
+      <button class="tab-btn active" data-tab="posts">
+        <i class="fas fa-th-large"></i> Publications
+      </button>
+      <button class="tab-btn" data-tab="about">
+        <i class="fas fa-user"></i> À propos
+      </button>
+    </div>
+
+    <!-- TAB: POSTS -->
+    <div class="profile-feed tab-content active" id="tab-posts">
+      <!-- Squelette de chargement -->
+      <div id="posts-skeleton">
+        <div class="post-card">
+          <div class="skeleton" style="height:16px;width:40%;margin-bottom:0.8rem;"></div>
+          <div class="skeleton" style="height:12px;width:90%;margin-bottom:0.5rem;"></div>
+          <div class="skeleton" style="height:12px;width:70%;"></div>
+        </div>
+        <div class="post-card">
+          <div class="skeleton" style="height:16px;width:35%;margin-bottom:0.8rem;"></div>
+          <div class="skeleton" style="height:180px;width:100%;margin-bottom:0.8rem;"></div>
+          <div class="skeleton" style="height:12px;width:60%;"></div>
+        </div>
+      </div>
+      <div id="posts-container"></div>
+    </div>
+
+    <!-- TAB: ABOUT -->
+    <div class="profile-feed tab-content" id="tab-about">
+      <div class="post-card" id="about-card">
+        <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1rem;color:#111;">
+          Informations
+        </h3>
+        <div id="about-content" style="font-family:'Figtree',sans-serif;color:#555;font-size:0.95rem;line-height:1.7;">
+          <p style="color:#aaa;">Chargement…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDIT PROFIL -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal-box">
+      <div class="modal-title">
+        Modifier mon profil
+        <button class="modal-close" id="close-edit-modal"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="edit-profile-form">
+        <div class="form-group">
+          <label class="form-label" for="edit-display-name">Nom affiché</label>
+          <input class="form-input" type="text" id="edit-display-name" placeholder="Ton nom public" maxlength="60">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-bio">Biographie</label>
+          <textarea class="form-textarea" id="edit-bio" placeholder="Parle de toi, de ta passion pour la musique béninoise…" maxlength="200"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-location">Localisation</label>
+          <input class="form-input" type="text" id="edit-location" placeholder="Ex: Cotonou, Bénin" maxlength="80">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-website">Site web / Lien</label>
+          <input class="form-input" type="url" id="edit-website" placeholder="https://...">
+        </div>
+        <button class="btn-save" type="submit" id="save-profile-btn">
+          Enregistrer
+        </button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- FOOTER -->
+  <div id="app-footer"></div>
+  <div id="cookie-slot"></div>
+
+  <!-- SCRIPTS -->
+  <script src="js/components.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/analytics.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+
+    if (typeof initCookies === 'function') initCookies();
+
+    // Scroll button
+    const scrollBtn = document.getElementById('scrollToTop');
+    window.addEventListener('scroll', () => {
+      scrollBtn?.classList.toggle('show', window.scrollY > 200);
+    });
+    scrollBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // ── Récupère l'ID du profil à afficher ──
+    // Si ?id=xxx → profil d'un autre user | sinon → profil de l'utilisateur connecté
+    const params      = new URLSearchParams(window.location.search);
+    const targetId    = params.get('id');
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser && !targetId) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const profileId = targetId || currentUser?.id;
+    const isOwn     = currentUser?.id === profileId;
+
+    // ── Charge le profil ──
+    const { data: profile, error } = await _supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', profileId)
+      .maybeSingle();
+
+    if (!profile || error) {
+      document.getElementById('profile-display-name').textContent = 'Profil introuvable';
+      return;
+    }
+
+    // ── Remplis l'interface ──
+    const avatarSrc = profile.avatar_url ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.display_name || profile.username)}&background=007847&color=fff&bold=true&size=128`;
+
+    document.getElementById('profile-avatar-img').src = avatarSrc;
+    document.getElementById('profile-display-name').textContent = profile.display_name || profile.username;
+    document.getElementById('profile-username').textContent     = '@' + profile.username;
+    document.getElementById('profile-bio').textContent          = profile.bio || '';
+    document.title = (profile.display_name || profile.username) + ' | Bénin Music Social';
+
+    // Stats
+    document.getElementById('stat-posts').textContent     = profile.posts_count     || 0;
+    document.getElementById('stat-followers').textContent = profile.followers_count  || 0;
+    document.getElementById('stat-following').textContent = profile.following_count  || 0;
+
+    // Links
+    const linksEl = document.getElementById('profile-links');
+    let linksHTML = '';
+    if (profile.location) {
+      linksHTML += `<span class="profile-location"><i class="fas fa-map-marker-alt"></i> ${profile.location}</span>`;
+    }
+    if (profile.website) {
+      linksHTML += `<span class="profile-website"><i class="fas fa-link"></i> <a href="${profile.website}" target="_blank" rel="noopener">${profile.website.replace(/^https?:\/\//, '')}</a></span>`;
+    }
+    linksEl.innerHTML = linksHTML;
+
+    // Joined date
+    const joined = new Date(profile.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    document.getElementById('about-content').innerHTML = `
+      <p><i class="fas fa-calendar-alt" style="color:#007847;margin-right:0.5rem;"></i> Membre depuis ${joined}</p>
+      ${profile.bio ? `<p style="margin-top:0.8rem;"><i class="fas fa-info-circle" style="color:#FCD116;margin-right:0.5rem;"></i> ${profile.bio}</p>` : ''}
+      ${profile.location ? `<p style="margin-top:0.6rem;"><i class="fas fa-map-marker-alt" style="color:#CE1126;margin-right:0.5rem;"></i> ${profile.location}</p>` : ''}
+      ${profile.website ? `<p style="margin-top:0.6rem;"><i class="fas fa-link" style="color:#007847;margin-right:0.5rem;"></i> <a href="${profile.website}" target="_blank" rel="noopener" style="color:#007847;">${profile.website}</a></p>` : ''}
+    `;
+
+    // ── Actions (Edit si own, Follow si autre) ──
+    const actionsEl = document.getElementById('profile-actions');
+    if (isOwn) {
+      document.getElementById('btn-edit-avatar').style.display = 'flex';
+
+      // ── Upload avatar au clic sur le bouton caméra ──
+      const btnAvatar  = document.getElementById('btn-edit-avatar');
+      const avatarInput = document.getElementById('avatar-file-input');
+
+      btnAvatar.addEventListener('click', () => avatarInput.click());
+
+      avatarInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!currentUser?.id) {
+          showToast('Erreur : utilisateur non connecté.', 'error');
+          return;
+        }
+
+        // Prévisualisation immédiate
+        const reader = new FileReader();
+        reader.onload = ev => {
+          document.getElementById('profile-avatar-img').src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        // Upload vers bucket avatars + sauvegarde en DB via storage.js
+        showToast('Upload en cours…', 'info');
+        const url = await uploadAvatar(file, currentUser.id);
+        if (url) {
+          // Met à jour toutes les images avatar sur la page
+          document.getElementById('profile-avatar-img').src = url;
+          document.querySelectorAll('.my-avatar, .nav-avatar, .sidebar-avatar').forEach(img => {
+            img.src = url;
+          });
+          showToast('Photo de profil mise à jour ✓');
+        }
+        avatarInput.value = '';
+      });
+      actionsEl.innerHTML = `<button class="btn-edit-profile" id="btn-edit-profile"><i class="fas fa-pen" style="margin-right:0.4rem;"></i> Modifier le profil</button>`;
+      document.getElementById('btn-edit-profile').addEventListener('click', openEditModal);
+    } else if (currentUser) {
+      // Vérifie si déjà suivi
+      const { data: followData } = await _supabase
+        .from('follows')
+        .select('id')
+        .eq('follower_id', currentUser.id)
+        .eq('following_id', profileId)
+        .maybeSingle();
+
+      const isFollowing = !!followData;
+      actionsEl.innerHTML = `
+        <button class="btn-follow ${isFollowing ? 'following' : ''}" id="btn-follow">
+          ${isFollowing ? '<i class="fas fa-user-check" style="margin-right:0.4rem;"></i> Abonné' : '<i class="fas fa-user-plus" style="margin-right:0.4rem;"></i> Suivre'}
+        </button>`;
+
+      document.getElementById('btn-follow').addEventListener('click', async () => {
+        const btn = document.getElementById('btn-follow');
+        if (isFollowing) {
+          await _supabase.from('follows').delete()
+            .eq('follower_id', currentUser.id).eq('following_id', profileId);
+          btn.className = 'btn-follow';
+          btn.innerHTML = '<i class="fas fa-user-plus" style="margin-right:0.4rem;"></i> Suivre';
+          showToast('Abonnement annulé', 'info');
+        } else {
+          await _supabase.from('follows').insert({ follower_id: currentUser.id, following_id: profileId });
+          btn.className = 'btn-follow following';
+          btn.innerHTML = '<i class="fas fa-user-check" style="margin-right:0.4rem;"></i> Abonné';
+          showToast('Tu suis maintenant ce profil ✓');
+        }
+      });
+    }
+
+    // ── Charge les publications ──
+    document.getElementById('posts-skeleton').style.display = 'block';
+
+    const { data: posts } = await _supabase
+      .from('posts')
+      .select('*, profiles(username, display_name, avatar_url)')
+      .eq('user_id', profileId)
+      .order('created_at', { ascending: false });
+
+    document.getElementById('posts-skeleton').style.display = 'none';
+    const postsContainer = document.getElementById('posts-container');
+
+    if (!posts || posts.length === 0) {
+      postsContainer.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🎵</div>
+          <p class="empty-text">Aucune publication pour l'instant.</p>
+        </div>`;
+    } else {
+      let userLikes = new Set();
+      if (currentUser) {
+        const { data: likesData } = await _supabase
+          .from('likes')
+          .select('post_id')
+          .eq('user_id', currentUser.id);
+        if (likesData) likesData.forEach(l => userLikes.add(l.post_id));
+      }
+
+      postsContainer.innerHTML = posts.map(post => {
+        const liked     = userLikes.has(post.id);
+        const timeAgo   = formatDate(post.created_at);
+        const authorAvatar = post.profiles?.avatar_url ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(post.profiles?.display_name || 'U')}&background=007847&color=fff&bold=true&size=64`;
+
+        return `
+          <article class="post-card" data-id="${post.id}">
+            <div class="post-header">
+              <div class="post-author">
+                <img src="${authorAvatar}" alt="avatar" class="post-author-avatar">
+                <div>
+                  <div class="post-author-name">${post.profiles?.display_name || post.profiles?.username || 'Utilisateur'}</div>
+                  <div class="post-time">${timeAgo}</div>
+                </div>
+              </div>
+              ${isOwn ? `<button onclick="deletePost('${post.id}', this)" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:0.85rem;" title="Supprimer"><i class="fas fa-trash"></i></button>` : ''}
+            </div>
+            <p class="post-content">${escapeHTML(post.content)}</p>
+            ${post.image_url ? `<img src="${post.image_url}" class="post-image" alt="image du post" loading="lazy">` : ''}
+            <div class="post-actions">
+              <button class="post-action-btn ${liked ? 'liked' : ''}" onclick="toggleLike('${post.id}', this, ${liked})">
+                <i class="${liked ? 'fas' : 'far'} fa-heart"></i>
+                <span>${post.likes_count || 0}</span>
+              </button>
+              <button class="post-action-btn" onclick="window.location.href='feed.html#post-${post.id}'">
+                <i class="far fa-comment"></i>
+                <span>${post.comments_count || 0}</span>
+              </button>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    // ── Tabs ──
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // ── Modal Edit ──
+    function openEditModal() {
+      document.getElementById('edit-display-name').value = profile.display_name || '';
+      document.getElementById('edit-bio').value      = profile.bio      || '';
+      document.getElementById('edit-location').value = profile.location || '';
+      document.getElementById('edit-website').value  = profile.website  || '';
+      document.getElementById('edit-modal').classList.add('open');
+    }
+
+    document.getElementById('close-edit-modal')?.addEventListener('click', () => {
+      document.getElementById('edit-modal').classList.remove('open');
+    });
+
+    document.getElementById('edit-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'edit-modal') document.getElementById('edit-modal').classList.remove('open');
+    });
+
+    document.getElementById('edit-profile-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('save-profile-btn');
+      btn.disabled = true;
+      btn.textContent = 'Enregistrement…';
+
+      const updates = {
+        display_name: document.getElementById('edit-display-name').value.trim(),
+        bio:          document.getElementById('edit-bio').value.trim(),
+        location:     document.getElementById('edit-location').value.trim(),
+        website:      document.getElementById('edit-website').value.trim(),
+        updated_at:   new Date().toISOString()
+      };
+
+      const { error } = await _supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', currentUser.id);
+
+      btn.disabled = false;
+      btn.textContent = 'Enregistrer';
+
+      if (error) {
+        showToast('Erreur lors de la sauvegarde', 'error');
+        return;
+      }
+
+      // Met à jour profileData local
+      profile.display_name = updates.display_name || profile.display_name;
+      profile.bio          = updates.bio;
+      profile.location     = updates.location;
+      profile.website      = updates.website;
+
+      // Met à jour l'UI sans recharger — TOUS les champs
+      document.getElementById('profile-display-name').textContent = profile.display_name || profile.username;
+      document.getElementById('profile-bio').textContent = profile.bio;
+
+      // Location + website (même fonction que l'init)
+      const linksEl = document.getElementById('profile-links');
+      if (linksEl) {
+        let linksHTML = '';
+        if (profile.location) {
+          linksHTML += `<span class="profile-location"><i class="fas fa-map-marker-alt"></i> ${profile.location}</span>`;
+        }
+        if (profile.website) {
+          linksHTML += `<span class="profile-website"><i class="fas fa-link"></i> <a href="${profile.website.startsWith('http') ? profile.website : 'https://' + profile.website}" target="_blank" rel="noopener">${profile.website.replace(/^https?:\/\//, '')}</a></span>`;
+        }
+        linksEl.innerHTML = linksHTML;
+      }
+
+      // Met à jour l'onglet "À propos" aussi
+      const aboutEl = document.getElementById('about-content');
+      if (aboutEl) {
+        const joined = new Date(profile.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+        aboutEl.innerHTML = `
+          <p><i class="fas fa-calendar-alt" style="color:#007847;margin-right:0.5rem;"></i> Membre depuis ${joined}</p>
+          ${profile.bio ? `<p style="margin-top:0.8rem;"><i class="fas fa-info-circle" style="color:#FCD116;margin-right:0.5rem;"></i> ${profile.bio}</p>` : ''}
+          ${profile.location ? `<p style="margin-top:0.6rem;"><i class="fas fa-map-marker-alt" style="color:#CE1126;margin-right:0.5rem;"></i> ${profile.location}</p>` : ''}
+          ${profile.website ? `<p style="margin-top:0.6rem;"><i class="fas fa-link" style="color:#007847;margin-right:0.5rem;"></i> <a href="${profile.website.startsWith('http') ? profile.website : 'https://' + profile.website}" target="_blank" rel="noopener" style="color:#007847;">${profile.website}</a></p>` : ''}`;
+      }
+
+      // Met à jour aussi le prénom dans edit-display-name pour la prochaine ouverture
+      const dnInput = document.getElementById('edit-display-name');
+      if (dnInput) dnInput.value = profile.display_name || '';
+
+      document.getElementById('edit-modal').classList.remove('open');
+      showToast('Profil mis à jour ✓');
+    });
+
+  }); // end DOMContentLoaded
+
+  // ── Like / Unlike ──
+  async function toggleLike(postId, btn, wasLiked) {
+    const user = await getCurrentUser();
+    if (!user) { showToast('Connecte-toi pour liker', 'error'); return; }
+
+    const countEl = btn.querySelector('span');
+    const icon    = btn.querySelector('i');
+    let count     = parseInt(countEl.textContent) || 0;
+
+    if (wasLiked) {
+      await _supabase.from('likes').delete().eq('post_id', postId).eq('user_id', user.id);
+      btn.classList.remove('liked');
+      icon.className = 'far fa-heart';
+      countEl.textContent = Math.max(count - 1, 0);
+      btn.setAttribute('onclick', `toggleLike('${postId}', this, false)`);
+    } else {
+      await _supabase.from('likes').insert({ post_id: postId, user_id: user.id });
+      btn.classList.add('liked');
+      icon.className = 'fas fa-heart';
+      countEl.textContent = count + 1;
+      btn.setAttribute('onclick', `toggleLike('${postId}', this, true)`);
+    }
+  }
+
+  // ── Delete Post ──
+  async function deletePost(postId, btn) {
+    if (!confirm('Supprimer cette publication ?')) return;
+    const { error } = await _supabase.from('posts').delete().eq('id', postId);
+    if (!error) {
+      btn.closest('.post-card').remove();
+      showToast('Publication supprimée');
+    }
+  }
+
+  // ── Escape HTML ──
+  function escapeHTML(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  </script>
+</body>
+</html>

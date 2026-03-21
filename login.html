@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion — BéninMusic</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="auth-page">
+
+    <!-- LEFT DECORATIVE -->
+    <div class="auth-left">
+      <div class="auth-left-bg"></div>
+      <div class="auth-left-content">
+        <div class="auth-left-logo">🇧🇯 BéninMusic</div>
+        <p class="auth-left-tagline">
+          Le réseau social de la musique béninoise.<br>
+          Connecte-toi pour partager, découvrir et vibrer.
+        </p>
+      </div>
+    </div>
+
+    <!-- RIGHT FORM -->
+    <div class="auth-right">
+      <div class="auth-box">
+
+        <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text-light);margin-bottom:2rem;transition:color 0.2s;" onmouseover="this.style.color='var(--green)'" onmouseout="this.style.color='var(--text-light)'">
+          <i class="fas fa-arrow-left"></i> Retour 
+        </a>
+
+        <h1 class="auth-title">Reprends le rythme</h1>
+        <p class="auth-subtitle">
+          Connecte-toi pour rejoindre la communauté musicale béninoise.<br>
+        </p>
+
+        <!-- Global error -->
+        <div id="global-error" class="hidden" style="background:rgba(206,17,38,0.08);border:1.5px solid var(--red);border-radius:10px;padding:12px 16px;font-size:0.85rem;color:var(--red);margin-bottom:1.2rem;"></div>
+
+        <form id="login-form" novalidate>
+
+          <div class="form-group">
+            <label class="form-label" for="email">
+              Email 
+            </label>
+            <input
+              type="email"
+              class="form-input"
+              id="email"
+              name="email"
+              placeholder="ton@email.com"
+              autocomplete="email"
+                required
+            >
+            <div class="form-error" id="email-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">
+              Mot de passe 
+            </label>
+            <div class="input-group">
+              <input
+                type="password"
+                class="form-input"
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+              >
+              <span class="input-toggle" id="toggle-password">
+                <i class="fas fa-eye"></i>
+              </span>
+            </div>
+            <div class="form-error" id="password-error"></div>
+          </div>
+
+          <div style="text-align:right;margin-top:-0.5rem;margin-bottom:1.5rem;">
+            <a href="#" style="font-size:0.82rem;color:var(--green);">Mot de passe oublié ?</a>
+          </div>
+
+          <button type="submit" class="auth-submit" id="login-submit">
+            Se connecter
+          </button>
+
+        </form>
+
+        <div class="auth-divider">ou</div>
+
+        <div class="social-auth">
+          <button class="social-btn" onclick="showToast('Bientôt disponible')">
+            <i class="fab fa-google" style="color:#EA4335;"></i> Google
+          </button>
+          <button class="social-btn" onclick="showToast('Bientôt disponible')">
+            <i class="fab fa-facebook-f" style="color:#1877F2;"></i> Facebook
+          </button>
+        </div>
+
+        <div class="auth-switch">
+          Pas encore de compte ?
+          <a href="register.html">S'inscrire →</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- COOKIE + SCROLL -->
+  <div id="cookie-slot"></div>
+
+  <script src="js/components.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/analytics.js"></script>
+</body>
+</html>

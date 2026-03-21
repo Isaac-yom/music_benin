@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fil d'actualité — BéninMusic</title>
+  <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="music-quote-strip" style="height:4px;min-height:4px;"></div>
+  <div id="app-header" data-active="feed"></div>
+
+  <div class="feed-layout">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="feed-sidebar-left">
+      <!-- Si connecté : profil résumé | Si non connecté : CTA inscription -->
+      <div id="sidebar-auth-block">
+        <!-- Injecté par JS -->
+      </div>
+      <nav class="sidebar-nav">
+        <a href="feed.html" class="sidebar-nav-item active"><i class="fas fa-home"></i> Fil d'actualité</a>
+        <a href="artists.html" class="sidebar-nav-item"><i class="fas fa-music"></i> Artistes</a>
+        <a href="events.html" class="sidebar-nav-item"><i class="fas fa-calendar-alt"></i> Événements</a>
+        <a href="search.html" class="sidebar-nav-item"><i class="fas fa-search"></i> Rechercher</a>
+        <a href="index.html" class="sidebar-nav-item"><i class="fas fa-globe"></i> Accueil</a>
+      </nav>
+    </aside>
+
+    <!-- MAIN FEED -->
+    <main class="feed-center">
+
+      <!-- CREATE POST — visible seulement si connecté -->
+      <div class="create-post" id="create-post-box" style="display:none;">
+        <div class="create-post-top">
+          <img class="create-post-avatar my-avatar"
+            src="https://ui-avatars.com/api/?name=U&background=007847&color=fff&bold=true" alt="You">
+          <textarea class="create-post-input" id="post-content"
+            placeholder="Partage une actualité musicale… 🎵" rows="1"></textarea>
+        </div>
+        <div class="media-preview" id="media-preview">
+          <img id="media-preview-img" class="hidden" src="" alt="Preview">
+          <video id="media-preview-vid" class="hidden" controls></video>
+          <div class="media-preview-close" id="media-preview-close"><i class="fas fa-times"></i></div>
+        </div>
+        <div class="link-preview" id="link-preview"></div>
+        <input type="file" id="image-file-input" accept="image/*" style="display:none">
+        <input type="file" id="video-file-input" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo" style="display:none">
+        <div class="create-post-actions">
+          <button class="post-action-btn" id="attach-image">
+            <i class="fas fa-image" style="color:#007847;"></i> <span>Photo</span>
+          </button>
+          <button class="post-action-btn" id="attach-video">
+            <i class="fab fa-youtube" style="color:#CE1126;"></i> <span>Vidéo</span>
+          </button>
+          <button class="post-action-btn" id="attach-link">
+            <i class="fas fa-link" style="color:#FCD116;"></i> <span>Lien</span>
+          </button>
+          <button class="post-submit-btn" id="post-submit">Publier</button>
+        </div>
+      </div>
+
+      <!-- BANNIÈRE invité — visible si non connecté -->
+      <div class="guest-banner" id="guest-banner" style="display:none;">
+        <div class="guest-banner-inner">
+          <span class="guest-banner-icon">🎵</span>
+          <div>
+            <strong>Tu veux partager une actualité ?</strong>
+            <p>Crée ton compte gratuitement pour publier, commenter et liker.</p>
+          </div>
+          <div class="guest-banner-btns">
+            <a href="register.html" class="guest-btn-primary">S'inscrire</a>
+            <a href="login.html" class="guest-btn-secondary">Connexion</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- POSTS -->
+      <div id="feed-posts">
+        <div class="loading-spinner"></div>
+      </div>
+
+      <div style="text-align:center;margin:2rem 0;">
+        <button class="transition-btn hidden" id="load-more-btn" style="margin:0 auto;">
+          Voir plus <span>↓</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="feed-sidebar-right">
+      <div class="sidebar-widget">
+        <div class="widget-title"><i class="fas fa-calendar-alt" style="color:var(--green);margin-right:6px;"></i> Prochains événements</div>
+        <div id="widget-events"><div class="loading-spinner" style="width:24px;height:24px;margin:1rem auto;border-width:2px;"></div></div>
+        <a href="events.html" style="display:block;text-align:center;font-size:0.8rem;color:var(--green);margin-top:0.8rem;font-weight:600;">Voir tous les événements →</a>
+      </div>
+      <div class="sidebar-widget">
+        <div class="widget-title"><i class="fas fa-fire" style="color:var(--red);margin-right:6px;"></i> Tendances</div>
+        <div id="widget-trending"><div class="loading-spinner" style="width:24px;height:24px;margin:1rem auto;border-width:2px;"></div></div>
+      </div>
+      <div class="sidebar-widget">
+        <div class="widget-title"><i class="fas fa-music" style="color:var(--yellow);margin-right:6px;"></i> Découvrir</div>
+        <a href="artists.html" style="display:flex;align-items:center;gap:10px;padding:10px;background:linear-gradient(135deg,rgba(0,120,71,0.08),rgba(252,209,22,0.08));border-radius:12px;margin-bottom:8px;text-decoration:none;color:var(--dark);">
+          <i class="fas fa-guitar" style="font-size:1.5rem;"></i>
+          <div><div style="font-weight:600;font-size:0.88rem;">Artistes Pionniers</div><div style="font-size:0.74rem;color:var(--gray-3);">...</div></div>
+        </a>
+      </div>
+    </aside>
+  </div>
+
+  <div id="app-footer"></div>
+  <div id="cookie-slot"></div>
+
+  <script src="js/components.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/feed.js"></script>
+
+  <script>
+  // Surcharge : feed.html ne redirige PAS si non connecté
+  // On gère l'affichage différemment selon le statut
+  document.addEventListener('DOMContentLoaded', async () => {
+    const user = await getCurrentUser();
+
+    if (user) {
+      // Utilisateur connecté
+      document.getElementById('create-post-box').style.display = 'block';
+      document.getElementById('guest-banner').style.display = 'none';
+
+      const profile = await getCurrentProfile();
+      const sidebarBlock = document.getElementById('sidebar-auth-block');
+      const avatar = profile?.avatar_url ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.display_name||'U')}&background=007847&color=fff&bold=true`;
+      sidebarBlock.innerHTML = `
+        <div class="sidebar-profile">
+          <img class="sidebar-avatar" src="${avatar}" alt="Avatar">
+          <div class="sidebar-name">${profile?.display_name || profile?.username || ''}</div>
+          <div class="sidebar-username">@${profile?.username || ''}</div>
+          <div class="sidebar-stats">
+            <div class="stat-item"><div class="stat-num">${profile?.posts_count||0}</div><div class="stat-label">Posts</div></div>
+            <div class="stat-item"><div class="stat-num">${profile?.followers_count||0}</div><div class="stat-label">Abonnés</div></div>
+            <div class="stat-item"><div class="stat-num">${profile?.following_count||0}</div><div class="stat-label">Suivis</div></div>
+          </div>
+          <a href="profile.html" style="display:block;text-align:center;font-size:0.82rem;color:var(--green);margin-top:0.8rem;font-weight:600;">Voir mon profil →</a>
+        </div>`;
+
+    } else {
+      // Visiteur non connecté
+      document.getElementById('create-post-box').style.display = 'none';
+      document.getElementById('guest-banner').style.display = 'block';
+
+      const sidebarBlock = document.getElementById('sidebar-auth-block');
+      sidebarBlock.innerHTML = `
+        <div style="background:linear-gradient(135deg,rgba(0,120,71,0.07),rgba(252,209,22,0.07));border-radius:16px;padding:1.5rem;text-align:center;margin-bottom:1rem;">
+          <div style="font-size:2rem;margin-bottom:0.5rem;">🇧🇯</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:0.4rem;">BéninMusic</div>
+          <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;line-height:1.5;">Rejoins la communauté musicale béninoise</p>
+          <a href="register.html" style="display:block;background:linear-gradient(90deg,#007847,#FCD116,#CE1126);border-radius:999px;padding:0.6rem 1rem;font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:#111;text-decoration:none;margin-bottom:0.5rem;">S'inscrire gratuitement</a>
+          <a href="login.html" style="display:block;border:1.5px solid #ddd;border-radius:999px;padding:0.5rem 1rem;font-size:0.8rem;color:var(--text-light);text-decoration:none;">Se connecter</a>
+        </div>`;
+    }
+  });
+  </script>
+
+  <style>
+    .guest-banner { margin-bottom: 1.5rem; }
+    .guest-banner-inner {
+      background: linear-gradient(135deg, rgba(0,120,71,0.06), rgba(252,209,22,0.08));
+      border: 1.5px solid rgba(252,209,22,0.3);
+      border-radius: 16px;
+      padding: 1.2rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .guest-banner-icon { font-size: 2rem; flex-shrink: 0; }
+    .guest-banner-inner > div:nth-child(2) { flex: 1; min-width: 180px; }
+    .guest-banner-inner strong { font-family: 'Syne', sans-serif; font-size: 0.95rem; color: #111; }
+    .guest-banner-inner p { font-size: 0.82rem; color: var(--text-light); margin: 0.2rem 0 0; }
+    .guest-banner-btns { display: flex; gap: 0.6rem; flex-shrink: 0; }
+    .guest-btn-primary {
+      background: linear-gradient(90deg,#007847,#FCD116,#CE1126);
+      border-radius: 999px; padding: 0.5rem 1.2rem;
+      font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700;
+      color: #111; text-decoration: none;
+    }
+    .guest-btn-secondary {
+      border: 1.5px solid #ddd; border-radius: 999px; padding: 0.5rem 1.2rem;
+      font-size: 0.8rem; color: var(--text-light); text-decoration: none;
+    }
+  </style>
+</body>
+</html>

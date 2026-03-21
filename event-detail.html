@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Événement — BéninMusic</title>
+  <meta name="description" content="Détails de l'événement musical — BéninMusic">
+  <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── Hero ── */
+    .ev-hero {
+      position: relative;
+      height: 400px;
+      background: linear-gradient(135deg, #007847 0%, #1a1a2e 60%, #CE1126 100%);
+      overflow: hidden;
+    }
+    .ev-hero img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; opacity: 0.4;
+    }
+    .ev-hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.75) 100%);
+    }
+    .ev-hero-content {
+      position: absolute; bottom: 2rem; left: 0; right: 0;
+      max-width: 860px; margin: 0 auto; padding: 0 1.5rem;
+    }
+    .ev-cat-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 0.3rem 0.9rem; border-radius: 999px;
+      font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 700;
+      margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .ev-hero-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(1.6rem, 3vw, 2.6rem);
+      font-weight: 800; color: #fff; margin: 0;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    }
+    .ev-hero-date {
+      color: rgba(255,255,255,0.8); font-size: 0.95rem;
+      margin-top: 0.6rem; display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── Layout ── */
+    .ev-layout {
+      max-width: 860px; margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid; grid-template-columns: 1fr 300px; gap: 2rem;
+    }
+    @media (max-width: 768px) {
+      .ev-layout { grid-template-columns: 1fr; }
+      .ev-hero { height: 260px; }
+    }
+
+    /* ── Cards ── */
+    .ev-card {
+      background: #fff; border-radius: 16px;
+      padding: 1.5rem; margin-bottom: 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .ev-card-title {
+      font-family: 'Syne', sans-serif; font-size: 1rem;
+      font-weight: 700; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+      color: var(--dark);
+    }
+
+    /* ── Info rows ── */
+    .ev-info-row {
+      display: flex; align-items: flex-start; gap: 0.9rem;
+      padding: 0.7rem 0; border-bottom: 1px solid var(--gray-2);
+      font-family: 'Figtree', sans-serif; font-size: 0.9rem;
+    }
+    .ev-info-row:last-child { border-bottom: none; }
+    .ev-info-row i { color: var(--green); width: 16px; margin-top: 2px; flex-shrink: 0; }
+    .ev-info-row .ev-info-label {
+      font-family: 'Syne', sans-serif; font-size: 0.7rem;
+      font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; color: #999; display: block;
+    }
+    .ev-info-row .ev-info-val {
+      font-weight: 500; color: var(--dark); display: block; margin-top: 1px;
+    }
+
+    /* ── Ticket button ── */
+    .ev-ticket-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 0.85rem 1.5rem;
+      background: linear-gradient(90deg, #007847, #FCD116);
+      border: none; border-radius: 999px;
+      font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700;
+      color: #111; text-decoration: none; cursor: pointer;
+      transition: opacity 0.2s; margin-bottom: 0.8rem;
+    }
+    .ev-ticket-btn:hover { opacity: 0.88; }
+    .ev-share-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 0.75rem 1.5rem;
+      background: rgba(0,120,71,0.08); border: 1.5px solid var(--green);
+      border-radius: 999px; font-family: 'Syne', sans-serif;
+      font-size: 0.85rem; font-weight: 700; color: var(--green);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .ev-share-btn:hover { background: rgba(0,120,71,0.15); }
+
+    /* ── Map placeholder ── */
+    .ev-map {
+      background: var(--gray); border-radius: 12px; height: 180px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-light); font-size: 0.85rem; text-align: center;
+      flex-direction: column; gap: 0.5rem;
+    }
+
+    /* ── Category colors ── */
+    .cat-concert   { background: rgba(206,17,38,0.1);  color: #CE1126; }
+    .cat-festival  { background: rgba(0,120,71,0.1);   color: #007847; }
+    .cat-showcase  { background: rgba(252,209,22,0.2); color: #997a00; }
+    .cat-album     { background: rgba(100,50,200,0.1); color: #6432c8; }
+    .cat-other     { background: rgba(0,0,0,0.06);     color: #555;    }
+
+    /* ── Loading / Error ── */
+    .page-center { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
+    .page-error  { text-align: center; padding: 4rem 1.5rem; max-width: 500px; margin: 0 auto; }
+    #debug-box { background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:1rem;margin:1rem 1.5rem;font-family:monospace;font-size:0.8rem;display:none; }
+  </style>
+</head>
+<body>
+
+  <div class="music-quote-strip" style="height:4px;min-height:4px;"></div>
+  <div id="app-header" data-active="events"></div>
+
+  <div id="debug-box"></div>
+
+  <div id="page-content">
+    <div class="page-center"><div class="loading-spinner"></div></div>
+  </div>
+
+  <div id="app-footer"></div>
+  <div id="cookie-slot"></div>
+
+  <script src="js/components.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/analytics.js"></script>
+  <script>
+  var CAT_LABELS = { concert:'Concert', festival:'Festival', showcase:'Showcase', album:'Sortie album', other:'Autre' };
+  var CAT_ICONS  = { concert:'fa-microphone', festival:'fa-music', showcase:'fa-star', album:'fa-compact-disc', other:'fa-calendar' };
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function getId() {
+    // Méthode 1 : hash direct (#uuid)
+    var hash = window.location.hash || '';
+    if (hash.length > 1) {
+      var val = decodeURIComponent(hash.substring(1)).trim();
+      if (val) return val;
+    }
+    // Méthode 2 : query string (?id=uuid)
+    try {
+      var p = new URLSearchParams(window.location.search);
+      var v = p.get('id');
+      if (v && v.trim()) return v.trim();
+    } catch(e) {}
+    return null;
+  }
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    var id = getId();
+
+    if (!id) {
+      document.getElementById('debug-box').style.display = 'block';
+      document.getElementById('debug-box').innerHTML = 'URL: ' + window.location.href + '<br>ID non détecté.';
+      showError('Événement introuvable.', 'Aucun identifiant dans l\'URL.');
+      return;
+    }
+
+    var res = await _supabase.from('events').select('*').eq('id', id).maybeSingle();
+
+    if (res.error) { showError('Erreur de chargement.', res.error.message); return; }
+    if (!res.data) { showError('Événement introuvable.', 'Aucun événement avec cet identifiant.'); return; }
+
+    document.title = res.data.title + ' — BéninMusic';
+    render(res.data);
+  });
+
+  function render(ev) {
+    var d       = new Date(ev.event_date);
+    var dateStr = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    var timeStr = d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    var cat     = ev.category || 'other';
+    var catLabel= CAT_LABELS[cat] || cat;
+    var catIcon = CAT_ICONS[cat]  || 'fa-calendar';
+    var img     = ev.image_url || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&q=80';
+
+    // ── Hero ──
+    var hero = '<div class="ev-hero">' +
+      '<img src="' + esc(img) + '" alt="' + esc(ev.title) + '">' +
+      '<div class="ev-hero-overlay"></div>' +
+      '<div class="ev-hero-content">' +
+        '<div class="ev-cat-badge cat-' + cat + '">' +
+          '<i class="fas ' + catIcon + '"></i>' + catLabel +
+        '</div>' +
+        '<h1 class="ev-hero-title">' + esc(ev.title) + '</h1>' +
+        '<div class="ev-hero-date">' +
+          '<i class="fas fa-calendar-alt"></i>' +
+          dateStr + ' à ' + timeStr +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+    // ── Description ──
+    var descHtml = (ev.description || ev.description_en)
+      ? '<div class="ev-card">' +
+          '<div class="ev-card-title"><i class="fas fa-align-left" style="color:var(--green);"></i> Description</div>' +
+          (ev.description ? '<p style="font-size:0.92rem;line-height:1.85;color:var(--text);">' + esc(ev.description) + '</p>' : '') +
+        '</div>'
+      : '';
+
+    // ── Galerie image ──
+    var galleryHtml = ev.image_url
+      ? '<div class="ev-card">' +
+          '<div class="ev-card-title"><i class="fas fa-image" style="color:var(--yellow);"></i> Affiche</div>' +
+          '<img src="' + esc(ev.image_url) + '" alt="' + esc(ev.title) + '" style="width:100%;border-radius:12px;object-fit:cover;max-height:320px;">' +
+        '</div>'
+      : '';
+
+    // ── Infos sidebar ──
+    var infoRows = '';
+
+    infoRows += '<div class="ev-info-row">' +
+      '<i class="fas fa-calendar-alt"></i>' +
+      '<div><span class="ev-info-label">Date</span><span class="ev-info-val">' + dateStr + '</span></div>' +
+    '</div>';
+
+    infoRows += '<div class="ev-info-row">' +
+      '<i class="fas fa-clock"></i>' +
+      '<div><span class="ev-info-label">Heure</span><span class="ev-info-val">' + timeStr + '</span></div>' +
+    '</div>';
+
+    if (ev.location || ev.city) {
+      infoRows += '<div class="ev-info-row">' +
+        '<i class="fas fa-map-marker-alt"></i>' +
+        '<div><span class="ev-info-label">Lieu</span><span class="ev-info-val">' +
+          esc(ev.location || '') + (ev.location && ev.city ? ' — ' : '') + esc(ev.city || '') +
+          (ev.country ? ', ' + esc(ev.country) : '') +
+        '</span></div>' +
+      '</div>';
+    }
+
+    infoRows += '<div class="ev-info-row">' +
+      '<i class="fas fa-tag"></i>' +
+      '<div><span class="ev-info-label">Prix</span><span class="ev-info-val" style="color:' + (ev.is_free?'var(--green)':'var(--dark)') + ';font-weight:700;">' +
+        (ev.is_free ? 'Gratuit' : (ev.price || 'À confirmer')) +
+      '</span></div>' +
+    '</div>';
+
+    infoRows += '<div class="ev-info-row">' +
+      '<i class="fas fa-tag" style="color:var(--yellow);"></i>' +
+      '<div><span class="ev-info-label">Catégorie</span><span class="ev-info-val">' + catLabel + '</span></div>' +
+    '</div>';
+
+    var ticketBtn = ev.ticket_url
+      ? '<a href="' + esc(ev.ticket_url) + '" target="_blank" rel="noopener" class="ev-ticket-btn">' +
+          '<i class="fas fa-ticket-alt"></i> Réserver les billets' +
+        '</a>'
+      : '<div style="text-align:center;padding:0.75rem;background:var(--gray);border-radius:12px;font-size:0.85rem;color:var(--text-light);margin-bottom:0.8rem;">' +
+          '<i class="fas fa-info-circle" style="margin-right:6px;"></i>Billets bientôt disponibles' +
+        '</div>';
+
+    var shareBtn = '<button class="ev-share-btn" onclick="shareEvent()">' +
+      '<i class="fas fa-share-alt"></i> Partager cet événement' +
+    '</button>';
+
+    var mapHtml = (ev.location || ev.city)
+      ? '<div class="ev-card" style="margin-top:0;">' +
+          '<div class="ev-card-title"><i class="fas fa-map-marker-alt" style="color:var(--red);"></i> Localisation</div>' +
+          '<div class="ev-map">' +
+            '<i class="fas fa-map-marked-alt" style="font-size:2rem;color:var(--green);"></i>' +
+            '<span>' + esc(ev.location || ev.city || '') + '</span>' +
+            '<a href="https://maps.google.com/?q=' + encodeURIComponent((ev.location||ev.city||'') + ' ' + (ev.city||'') + ' Bénin') + '" ' +
+              'target="_blank" rel="noopener" ' +
+              'style="font-size:0.8rem;color:var(--green);font-weight:600;text-decoration:none;margin-top:4px;">' +
+              '<i class="fas fa-external-link-alt" style="margin-right:4px;"></i>Voir sur Google Maps' +
+            '</a>' +
+          '</div>' +
+        '</div>'
+      : '';
+
+    var sidebar =
+      '<div class="ev-card">' +
+        '<div class="ev-card-title"><i class="fas fa-info-circle" style="color:var(--green);"></i> Informations</div>' +
+        infoRows +
+      '</div>' +
+      ticketBtn + shareBtn + mapHtml +
+      '<div class="ev-card" style="text-align:center;margin-top:1rem;">' +
+        '<a href="events.html" style="font-size:0.85rem;color:var(--green);font-weight:600;text-decoration:none;">' +
+          '<i class="fas fa-arrow-left" style="margin-right:5px;"></i>Tous les événements' +
+        '</a>' +
+      '</div>';
+
+    document.getElementById('page-content').innerHTML =
+      hero +
+      '<div class="ev-layout">' +
+        '<div>' + descHtml + galleryHtml + '</div>' +
+        '<aside>' + sidebar + '</aside>' +
+      '</div>';
+  }
+
+  function shareEvent() {
+    var url  = window.location.href;
+    var name = document.title;
+    if (navigator.share) {
+      navigator.share({ title: name, url: url });
+    } else {
+      navigator.clipboard.writeText(url);
+      showToast('Lien copié !');
+    }
+  }
+
+  function showError(title, detail) {
+    document.getElementById('page-content').innerHTML =
+      '<div class="page-error">' +
+        '<i class="fas fa-calendar-times" style="font-size:3rem;color:var(--green);margin-bottom:1rem;display:block;"></i>' +
+        '<h2 style="font-family:\'Syne\',sans-serif;font-weight:800;margin-bottom:0.5rem;">' + esc(title) + '</h2>' +
+        '<p style="color:var(--text-light);margin-bottom:2rem;">' + esc(detail||'') + '</p>' +
+        '<a href="events.html" class="transition-btn" style="display:inline-flex;">' +
+          '<i class="fas fa-arrow-left" style="margin-right:6px;"></i>Retour aux événements' +
+        '</a>' +
+      '</div>';
+  }
+  </script>
+</body>
+</html>

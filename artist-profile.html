@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artiste — BéninMusic</title>
+  <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .ap-hero{position:relative;height:320px;background:linear-gradient(135deg,#007847 0%,#1a1a2e 60%,#CE1126 100%);overflow:hidden}
+    .ap-hero img.cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35}
+    .ap-hero .overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05),rgba(0,0,0,0.65))}
+    .ap-header{max-width:900px;margin:-80px auto 0;padding:0 1.5rem;position:relative}
+    .ap-avatar{width:140px;height:140px;border-radius:50%;object-fit:cover;border:4px solid #fff;box-shadow:0 4px 24px rgba(0,0,0,0.2);display:block}
+    .ap-verified{position:absolute;bottom:6px;right:6px;background:var(--green);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,120,71,0.4)}
+    .ap-name{font-family:'Poppins',sans-serif;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:var(--dark);margin:0.8rem 0 0}
+    .ap-sub{font-size:0.9rem;color:var(--text-light);margin-top:0.2rem}
+    .ap-gen{display:inline-block;padding:0.2rem 0.8rem;border-radius:999px;font-size:0.75rem;font-weight:700;margin-top:0.5rem}
+    .ap-layout{max-width:900px;margin:2rem auto;padding:0 1.5rem;display:grid;grid-template-columns:1fr 290px;gap:2rem}
+    @media(max-width:768px){.ap-layout{grid-template-columns:1fr}.ap-avatar{width:100px;height:100px}.ap-hero{height:220px}}
+    .ap-card{background:#fff;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,0.05)}
+    .ap-card-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
+    .social-links{display:flex;flex-wrap:wrap;gap:0.7rem}
+    .sl{display:flex;align-items:center;gap:0.4rem;padding:0.45rem 0.9rem;border-radius:999px;font-family:'Figtree',sans-serif;font-size:0.83rem;font-weight:600;text-decoration:none;transition:opacity 0.2s}
+    .sl:hover{opacity:0.75}
+    .sl-spotify{background:rgba(29,185,84,0.1);color:#1DB954}
+    .sl-youtube{background:rgba(206,17,38,0.08);color:#CE1126}
+    .sl-instagram{background:rgba(225,48,108,0.08);color:#E1306C}
+    .sl-facebook{background:rgba(24,119,242,0.08);color:#1877F2}
+    .sl-tiktok{background:rgba(0,0,0,0.06);color:#111}
+    .albums-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:1rem}
+    .album-link{text-align:center;text-decoration:none;color:var(--dark)}
+    .album-link img{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:0.4rem}
+    .al-title{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .al-year{font-size:0.7rem;color:var(--text-light)}
+    .song-row{display:flex;align-items:center;gap:0.9rem;padding:0.65rem 0.3rem;border-bottom:1px solid var(--gray-2);text-decoration:none;color:var(--dark);border-radius:8px;transition:background 0.15s}
+    .song-row:last-child{border-bottom:none}
+    .song-row:hover{background:var(--gray)}
+    .song-num{width:20px;text-align:center;font-size:0.78rem;color:var(--text-light)}
+    .song-img{width:38px;height:38px;border-radius:6px;object-fit:cover;flex-shrink:0}
+    .song-info{flex:1;min-width:0}
+    .song-title{font-family:'Syne',sans-serif;font-size:0.86rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .song-dur{font-size:0.73rem;color:var(--text-light)}
+    .song-play{color:var(--green);opacity:0;font-size:0.95rem;transition:opacity 0.2s}
+    .song-row:hover .song-play{opacity:1}
+    .info-row{display:flex;align-items:flex-start;gap:0.7rem;padding:0.55rem 0;border-bottom:1px solid var(--gray-2);font-size:0.87rem}
+    .info-row:last-child{border-bottom:none}
+    .info-row i{color:var(--green);width:15px;margin-top:2px;flex-shrink:0}
+    .page-center{display:flex;align-items:center;justify-content:center;min-height:60vh}
+    .page-error{text-align:center;padding:4rem 1.5rem;max-width:500px;margin:0 auto}
+    #debug-box{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:1rem;margin:1rem 1.5rem;font-family:monospace;font-size:0.8rem;display:none}
+  </style>
+</head>
+<body>
+
+  <div class="music-quote-strip" style="height:4px;min-height:4px;"></div>
+  <div id="app-header" data-active="artists"></div>
+
+  <!-- Debug box (visible si problème) -->
+  <div id="debug-box"></div>
+
+  <div id="page-content">
+    <div class="page-center"><div class="loading-spinner"></div></div>
+  </div>
+
+  <div id="app-footer"></div>
+  <div id="cookie-slot"></div>
+
+  <script src="js/components.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/analytics.js"></script>
+  <script>
+  var GEN_LABEL = {pioneer:'Pionnier',new:'Nouvelle génération',emerging:'Émergent'};
+  var GEN_ICON  = {pioneer:'fa-trophy',new:'fa-rocket',emerging:'fa-star'};
+  var GEN_BG    = {pioneer:'rgba(252,209,22,0.15)',new:'rgba(0,120,71,0.12)',emerging:'rgba(206,17,38,0.1)'};
+  var GEN_CLR   = {pioneer:'#997a00',new:'#007847',emerging:'#CE1126'};
+
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function getSlug() {
+    // MÉTHODE 1 : Hash direct — ex: artist-profile.html#isaac-chanteur
+    // C'est la méthode principale, fonctionne sur TOUS les serveurs (local, Vercel, etc.)
+    var hash = window.location.hash || '';
+    if (hash.length > 1) {
+      var val = decodeURIComponent(hash.substring(1)).trim();
+      if (val && val.indexOf('=') === -1) return val; // hash simple sans paramètre
+    }
+
+    // MÉTHODE 2 : URLSearchParams — ex: artist-profile.html?slug=isaac
+    try {
+      var p = new URLSearchParams(window.location.search);
+      var s = p.get('slug');
+      if (s && s.trim()) return s.trim();
+    } catch(e) {}
+
+    // MÉTHODE 3 : parsing manuel du query string
+    var search = window.location.search || '';
+    if (search.length > 1) {
+      var parts = search.substring(1).split('&');
+      for (var i = 0; i < parts.length; i++) {
+        var eq = parts[i].indexOf('=');
+        if (eq > -1) {
+          var key = decodeURIComponent(parts[i].substring(0, eq));
+          var val2 = decodeURIComponent(parts[i].substring(eq + 1));
+          if (key === 'slug' && val2.trim()) return val2.trim();
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function showDebug(info) {
+    var box = document.getElementById('debug-box');
+    box.style.display = 'block';
+    box.innerHTML = '<strong>Debug info :</strong><br>' + info;
+  }
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    var slug = getSlug();
+
+    // Debug : affiche l'URL complète pour diagnostic
+    var debugInfo = 'URL: ' + window.location.href + '<br>search: ' + (window.location.search||'(vide)') + '<br>slug détecté: ' + (slug||'(aucun)');
+
+    if (!slug) {
+      showDebug(debugInfo);
+      showError('Slug non détecté dans l\'URL.', 'URL reçue : ' + esc(window.location.href));
+      return;
+    }
+
+    // Charge l'artiste
+    var res = await _supabase.from('artists').select('*').eq('slug', slug).maybeSingle();
+
+    if (res.error) {
+      showDebug(debugInfo + '<br>Erreur Supabase: ' + res.error.message);
+      showError('Erreur de chargement.', res.error.message);
+      return;
+    }
+
+    if (!res.data) {
+      // Charge tous les artistes pour afficher les slugs disponibles
+      var all = await _supabase.from('artists').select('name, slug').order('name');
+      var liste = (all.data||[]).map(function(a){ return a.slug + ' (' + a.name + ')'; }).join('<br>');
+      showDebug(debugInfo + '<br><br><strong>Slugs disponibles en base :</strong><br>' + (liste||'(aucun artiste)'));
+      showError('Artiste introuvable.', 'Slug cherché : "' + esc(slug) + '" — Voir le bloc jaune ci-dessus pour les slugs disponibles.');
+      return;
+    }
+
+    document.getElementById('debug-box').style.display = 'none';
+    document.title = res.data.name + ' — BéninMusic';
+
+    var albumsRes = await _supabase.from('albums').select('*').eq('artist_id', res.data.id).order('release_year',{ascending:false});
+    var songsRes  = await _supabase.from('songs').select('*').eq('artist_id', res.data.id).order('release_year',{ascending:false}).limit(10);
+
+    render(res.data, albumsRes.data||[], songsRes.data||[]);
+  });
+
+  function render(a, albums, songs) {
+    var avatarSrc = a.image_url || ('https://ui-avatars.com/api/?name='+encodeURIComponent(a.name)+'&background=007847&color=fff&size=280&bold=true');
+    var coverImg  = a.cover_url || a.image_url || '';
+
+    var hero = '<div class="ap-hero">'+(coverImg?'<img class="cover" src="'+esc(coverImg)+'" alt="">':'')+'<div class="overlay"></div></div>';
+
+    var genBadge = a.generation
+      ? '<span class="ap-gen" style="background:'+(GEN_BG[a.generation]||'rgba(0,0,0,0.07)')+';color:'+(GEN_CLR[a.generation]||'#555')+';">'+
+        '<i class="fas '+(GEN_ICON[a.generation]||'fa-music')+'" style="margin-right:4px;"></i>'+(GEN_LABEL[a.generation]||a.generation)+'</span>'
+      : '';
+
+    var header = '<div class="ap-header">'+
+      '<div style="position:relative;display:inline-block;">'+
+        '<img class="ap-avatar" src="'+esc(avatarSrc)+'" alt="'+esc(a.name)+'">'+
+        (a.is_verified?'<div class="ap-verified"><i class="fas fa-check"></i></div>':'')+
+      '</div>'+
+      '<h1 class="ap-name">'+esc(a.name)+'</h1>'+
+      '<p class="ap-sub">'+esc(a.genre||'')+(a.genre&&a.city?' · ':'')+esc(a.city||'')+'</p>'+
+      genBadge+'</div>';
+
+    var bio = '';
+    if (a.bio||a.bio_en) {
+      bio = '<div class="ap-card"><div class="ap-card-title"><i class="fas fa-info-circle" style="color:var(--green);"></i> Biographie</div>'+
+        (a.bio?'<p style="font-size:0.9rem;line-height:1.8;margin-bottom:'+(a.bio_en?'1rem':'0')+';">'+esc(a.bio)+'</p>':'')+
+        (a.bio_en?'<p style="font-size:0.87rem;line-height:1.8;color:var(--text-light);font-style:italic;">'+esc(a.bio_en)+'</p>':'')+
+      '</div>';
+    }
+
+    var albumsHtml = '';
+    if (albums.length) {
+      albumsHtml = '<div class="ap-card"><div class="ap-card-title"><i class="fas fa-compact-disc" style="color:var(--yellow);"></i> Albums ('+albums.length+')</div><div class="albums-grid">'+
+        albums.map(function(al){
+          var c = al.cover_url||('https://ui-avatars.com/api/?name='+encodeURIComponent(al.title)+'&background=FCD116&color=111&size=120&bold=true');
+          var l = al.spotify_url||al.youtube_url||'#';
+          return '<a href="'+esc(l)+'" target="'+(l!=='#'?'_blank':'_self')+'" rel="noopener" class="album-link">'+
+            '<img src="'+esc(c)+'" alt="'+esc(al.title)+'" loading="lazy">'+
+            '<div class="al-title">'+esc(al.title)+'</div>'+
+            (al.release_year?'<div class="al-year">'+al.release_year+'</div>':'')+
+          '</a>';
+        }).join('')+
+      '</div></div>';
+    }
+
+    var songsHtml = '';
+    if (songs.length) {
+      songsHtml = '<div class="ap-card"><div class="ap-card-title"><i class="fas fa-music" style="color:var(--red);"></i> Chansons populaires</div>'+
+        songs.map(function(s,i){
+          var c = s.cover_url||('https://ui-avatars.com/api/?name='+encodeURIComponent(s.title)+'&background=CE1126&color=fff&size=80&bold=true');
+          var l = s.youtube_url||s.spotify_url||'#';
+          return '<a href="'+esc(l)+'" target="'+(l!=='#'?'_blank':'_self')+'" rel="noopener" class="song-row">'+
+            '<span class="song-num">'+(i+1)+'</span>'+
+            '<img class="song-img" src="'+esc(c)+'" alt="'+esc(s.title)+'" loading="lazy">'+
+            '<div class="song-info"><div class="song-title">'+esc(s.title)+'</div>'+(s.duration?'<div class="song-dur">'+esc(s.duration)+'</div>':'')+' </div>'+
+            '<i class="fas fa-play song-play"></i>'+
+          '</a>';
+        }).join('')+
+      '</div>';
+    }
+
+    var slItems='';
+    if(a.spotify_url)   slItems+='<a href="'+esc(a.spotify_url)+'"   target="_blank" rel="noopener" class="sl sl-spotify"><i class="fab fa-spotify"></i> Spotify</a>';
+    if(a.youtube_url)   slItems+='<a href="'+esc(a.youtube_url)+'"   target="_blank" rel="noopener" class="sl sl-youtube"><i class="fab fa-youtube"></i> YouTube</a>';
+    if(a.instagram_url) slItems+='<a href="'+esc(a.instagram_url)+'" target="_blank" rel="noopener" class="sl sl-instagram"><i class="fab fa-instagram"></i> Instagram</a>';
+    if(a.facebook_url)  slItems+='<a href="'+esc(a.facebook_url)+'"  target="_blank" rel="noopener" class="sl sl-facebook"><i class="fab fa-facebook"></i> Facebook</a>';
+    if(a.tiktok_url)    slItems+='<a href="'+esc(a.tiktok_url)+'"    target="_blank" rel="noopener" class="sl sl-tiktok"><i class="fab fa-tiktok"></i> TikTok</a>';
+    var socials = slItems?'<div class="ap-card"><div class="ap-card-title"><i class="fas fa-share-alt" style="color:var(--green);"></i> Retrouver sur</div><div class="social-links">'+slItems+'</div></div>':'';
+
+    var infoRows='';
+    if(a.city)              infoRows+='<div class="info-row"><i class="fas fa-map-marker-alt"></i><span>'+esc(a.city)+(a.country?', '+esc(a.country):'')+'</span></div>';
+    if(a.genre)             infoRows+='<div class="info-row"><i class="fas fa-music"></i><span>'+esc(a.genre)+'</span></div>';
+    if(a.monthly_auditeurs) infoRows+='<div class="info-row"><i class="fas fa-headphones"></i><span>'+a.monthly_auditeurs.toLocaleString('fr-FR')+' auditeurs</span></div>';
+    var infoCard = infoRows?'<div class="ap-card"><div class="ap-card-title"><i class="fas fa-id-card" style="color:var(--yellow);"></i> Informations</div>'+infoRows+'</div>':'';
+
+    var empty = (!a.bio&&!albums.length&&!songs.length)
+      ?'<div class="ap-card" style="text-align:center;padding:3rem;color:var(--text-light);"><i class="fas fa-music" style="font-size:2rem;margin-bottom:1rem;display:block;color:var(--green);"></i><p>Plus de contenu à venir / Bientôt disponible</p></div>'
+      :'';
+
+    document.getElementById('page-content').innerHTML =
+      hero+header+
+      '<div class="ap-layout">'+
+        '<div>'+bio+albumsHtml+songsHtml+empty+'</div>'+
+        '<aside>'+
+          infoCard+socials+
+          '<div class="ap-card" style="text-align:center;">'+
+            '<a href="artists.html" style="font-size:0.85rem;color:var(--green);font-weight:600;text-decoration:none;">'+
+            '<i class="fas fa-arrow-left" style="margin-right:5px;"></i>Tous les artistes</a>'+
+          '</div>'+
+        '</aside>'+
+      '</div>';
+  }
+
+  function showError(title, detail) {
+    document.getElementById('page-content').innerHTML =
+      '<div class="page-error">'+
+        '<i class="fas fa-music" style="font-size:3rem;color:var(--green);margin-bottom:1rem;display:block;"></i>'+
+        '<h2 style="font-family:\'Syne\',sans-serif;font-weight:800;margin-bottom:0.5rem;">'+esc(title)+'</h2>'+
+        '<p style="color:var(--text-light);margin-bottom:2rem;">'+esc(detail||'')+'</p>'+
+        '<a href="artists.html" class="transition-btn" style="display:inline-flex;">'+
+          '<i class="fas fa-arrow-left" style="margin-right:6px;"></i>Retour aux artistes'+
+        '</a>'+
+      '</div>';
+  }
+  </script>
+</body>
+</html>

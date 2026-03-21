@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin — BéninMusic</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .dash-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .dash-sidebar {
+      background: var(--dark); padding: 2rem 1rem;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+    .dash-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: #fff; margin-bottom: 2rem; padding: 0 0.5rem; }
+    .dash-logo span { display: block; font-size: 0.7rem; color: rgba(255,255,255,0.4); font-weight: 400; margin-top: 2px; }
+    .dash-nav-item {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.75rem 1rem; border-radius: 10px; cursor: pointer;
+      font-family: 'Figtree', sans-serif; font-size: 0.88rem;
+      color: rgba(255,255,255,0.55); transition: all 0.2s;
+      margin-bottom: 0.2rem; border: none; background: none; width: 100%; text-align: left;
+    }
+    .dash-nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .dash-nav-item.active { background: rgba(252,209,22,0.12); color: #FCD116; }
+    .dash-nav-item i { width: 18px; text-align: center; }
+    .dash-main { background: #f8f9fb; padding: 2rem; overflow-y: auto; }
+    .dash-panel { display: none; }
+    .dash-panel.active { display: block; }
+    .dash-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 0.3rem; }
+    .dash-subtitle { font-size: 0.88rem; color: var(--text-light); margin-bottom: 2rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card {
+      background: #fff; border-radius: 16px; padding: 1.3rem 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .stat-card-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; }
+    .stat-card-label { font-size: 0.8rem; color: var(--text-light); margin-top: 3px; }
+    .stat-card-icon { font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .dash-card { background: #fff; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+    .dash-card-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 1.2rem; display: flex; align-items: center; justify-content: space-between; }
+    .btn-add {
+      background: linear-gradient(90deg,#007847,#FCD116,#CE1126);
+      border: none; border-radius: 999px; padding: 0.5rem 1.2rem;
+      font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 700;
+      color: #111; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+    .dash-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .dash-field { margin-bottom: 1rem; }
+    .dash-label { display: block; font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #888; margin-bottom: 0.4rem; }
+    .dash-input, .dash-textarea, .dash-select {
+      width: 100%; padding: 0.7rem 1rem; border: 1.5px solid #eee;
+      border-radius: 10px; font-family: 'Figtree', sans-serif; font-size: 0.9rem;
+      color: var(--dark); background: #fafafa; box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .dash-input:focus, .dash-textarea:focus, .dash-select:focus { outline: none; border-color: #007847; background: #fff; }
+    .dash-textarea { resize: vertical; min-height: 90px; }
+    .dash-submit {
+      background: linear-gradient(90deg,#007847,#FCD116,#CE1126);
+      border: none; border-radius: 999px; padding: 0.75rem 2rem;
+      font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700;
+      color: #111; cursor: pointer; margin-top: 0.5rem;
+    }
+    .dash-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .dash-table { width: 100%; border-collapse: collapse; }
+    .dash-table th { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #888; padding: 0.75rem 1rem; text-align: left; border-bottom: 2px solid #f0f0f0; }
+    .dash-table td { padding: 0.9rem 1rem; border-bottom: 1px solid #f5f5f5; font-family: 'Figtree', sans-serif; font-size: 0.88rem; color: #444; }
+    .dash-table tr:last-child td { border-bottom: none; }
+    .btn-del { background: rgba(206,17,38,0.08); border: none; border-radius: 6px; padding: 0.35rem 0.7rem; color: #CE1126; font-size: 0.78rem; cursor: pointer; font-family: 'Figtree', sans-serif; font-weight: 600; }
+    .btn-del:hover { background: rgba(206,17,38,0.15); }
+    .badge-role { padding: 0.2rem 0.7rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .badge-admin { background: rgba(252,209,22,0.2); color: #997a00; }
+    .badge-user { background: rgba(0,0,0,0.06); color: #666; }
+    .badge-artist { background: rgba(0,120,71,0.1); color: #007847; }
+    @media (max-width: 768px) {
+      .dash-layout { grid-template-columns: 1fr; }
+      .dash-sidebar { height: auto; position: relative; }
+      .dash-form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dash-layout">
+    <!-- SIDEBAR -->
+    <aside class="dash-sidebar">
+      <div class="dash-logo">
+        🇧🇯 BéninMusic
+        <span>Dashboard Admin</span>
+      </div>
+
+      <button class="dash-nav-item active" data-target="panel-overview">
+        <i class="fas fa-chart-bar"></i> Vue d'ensemble
+      </button>
+      <button class="dash-nav-item" data-target="panel-events">
+        <i class="fas fa-calendar-alt"></i> Événements
+      </button>
+      <button class="dash-nav-item" data-target="panel-artists">
+        <i class="fas fa-music"></i> Artistes DB
+      </button>
+      <button class="dash-nav-item" data-target="panel-posts">
+        <i class="fas fa-newspaper"></i> Publications
+      </button>
+      <button class="dash-nav-item" data-target="panel-users">
+        <i class="fas fa-users"></i> Utilisateurs
+      </button>
+      <button class="dash-nav-item" data-target="panel-analytics">
+        <i class="fas fa-chart-line"></i> Statistiques visites
+      </button>
+      <button class="dash-nav-item" data-target="panel-messages">
+        <i class="fas fa-envelope"></i> Messages contact
+        <span id="msg-badge" style="background:var(--red);color:#fff;border-radius:999px;font-size:0.65rem;padding:1px 7px;margin-left:auto;display:none;">0</span>
+      </button>
+
+      <div style="border-top:1px solid rgba(255,255,255,0.08);margin:1rem 0;padding-top:1rem;">
+        <a href="feed.html" class="dash-nav-item" style="text-decoration:none;">
+          <i class="fas fa-eye"></i> Voir le site
+        </a>
+        <button class="dash-nav-item" id="dash-logout">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="dash-main">
+
+      <!-- ── PANEL: OVERVIEW ── -->
+      <div class="dash-panel active" id="panel-overview">
+        <div class="dash-title">Vue d'ensemble 📊</div>
+        <div class="dash-subtitle">Statistiques générales de BéninMusic</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-icon">👥</div>
+            <div class="stat-card-value" id="stat-users">—</div>
+            <div class="stat-card-label">Utilisateurs inscrits</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon">📝</div>
+            <div class="stat-card-value" id="stat-posts">—</div>
+            <div class="stat-card-label">Publications</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon">❤️</div>
+            <div class="stat-card-value" id="stat-likes">—</div>
+            <div class="stat-card-label">Likes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon">💬</div>
+            <div class="stat-card-value" id="stat-comments">—</div>
+            <div class="stat-card-label">Commentaires</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon">📅</div>
+            <div class="stat-card-value" id="stat-events">—</div>
+            <div class="stat-card-label">Événements</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon">🎤</div>
+            <div class="stat-card-value" id="stat-artists">—</div>
+            <div class="stat-card-label">Artistes en DB</div>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-title">🕐 Dernières publications</div>
+          <table class="dash-table">
+            <thead><tr><th>Auteur</th><th>Contenu</th><th>Date</th><th>Likes</th><th>Action</th></tr></thead>
+            <tbody id="recent-posts-table"><tr><td colspan="5" style="text-align:center;color:#aaa;padding:1.5rem;">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PANEL: EVENTS ── -->
+      <div class="dash-panel" id="panel-events">
+        <div class="dash-title">Événements 📅</div>
+        <div class="dash-subtitle">Crée et gère les événements affichés sur le site</div>
+
+        <div class="dash-card">
+          <div class="dash-card-title">➕ Ajouter un événement</div>
+          <form id="form-add-event">
+            <div class="dash-form-grid">
+              <div class="dash-field">
+                <label class="dash-label">Titre *</label>
+                <input class="dash-input" type="text" id="ev-title" placeholder="Nom de l'événement" required>
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Catégorie</label>
+                <select class="dash-select" id="ev-category">
+                  <option value="concert">Concert</option>
+                  <option value="festival">Festival</option>
+                  <option value="showcase">Showcase</option>
+                  <option value="album">Sortie album</option>
+                  <option value="other">Autre</option>
+                </select>
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Date & heure *</label>
+                <input class="dash-input" type="datetime-local" id="ev-date" required>
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Ville</label>
+                <input class="dash-input" type="text" id="ev-city" placeholder="Cotonou">
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Lieu</label>
+                <input class="dash-input" type="text" id="ev-location" placeholder="Stade de l'Amitié...">
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Prix</label>
+                <input class="dash-input" type="text" id="ev-price" placeholder="2000 XOF ou Gratuit">
+              </div>
+              <div class="dash-field" style="grid-column:1/-1;">
+                <label class="dash-label">Description</label>
+                <textarea class="dash-textarea" id="ev-desc" placeholder="Décris l'événement…"></textarea>
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Image affiche</label>
+                <input class="dash-input" type="file" id="ev-image-file" accept="image/jpeg,image/png,image/webp" style="padding:0.4rem;">
+                <img id="ev-image-preview" src="" alt="" style="display:none;margin-top:8px;max-height:120px;border-radius:8px;object-fit:cover;">
+                <input type="hidden" id="ev-image">
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">URL Billets</label>
+                <input class="dash-input" type="url" id="ev-tickets" placeholder="https://...">
+              </div>
+              <div class="dash-field" style="display:flex;align-items:center;gap:8px;padding-top:1.5rem;">
+                <input type="checkbox" id="ev-free" style="width:16px;height:16px;accent-color:var(--green);">
+                <label for="ev-free" style="font-family:'Figtree',sans-serif;font-size:0.88rem;">Événement gratuit</label>
+              </div>
+            </div>
+            <button class="dash-submit" type="submit" id="btn-add-event">
+              <i class="fas fa-plus"></i> Créer l'événement
+            </button>
+          </form>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-title">📋 Événements publiés</div>
+          <table class="dash-table">
+            <thead><tr><th>Titre</th><th>Date</th><th>Ville</th><th>Catégorie</th><th>Action</th></tr></thead>
+            <tbody id="events-table"><tr><td colspan="5" style="text-align:center;color:#aaa;padding:1.5rem;">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PANEL: ARTISTS ── -->
+      <div class="dash-panel" id="panel-artists">
+        <div class="dash-title">Artistes DB 🎤</div>
+        <div class="dash-subtitle">Ajoute des artistes à la base de données Supabase</div>
+
+        <div class="dash-card">
+          <div class="dash-card-title">➕ Ajouter un artiste</div>
+          <form id="form-add-artist">
+            <div class="dash-form-grid">
+              <div class="dash-field">
+                <label class="dash-label">Nom *</label>
+                <input class="dash-input" type="text" id="ar-name" placeholder="Nom de l'artiste" required>
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Slug (URL) *</label>
+                <input class="dash-input" type="text" id="ar-slug" placeholder="angelique-kidjo" required>
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Genre musical</label>
+                <input class="dash-input" type="text" id="ar-genre" placeholder="Afrobeat, Jazz, Gospel…">
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Génération</label>
+                <select class="dash-select" id="ar-generation">
+                  <option value="pioneer">Pionnier</option>
+                  <option value="new">Nouvelle génération</option>
+                  <option value="emerging">Émergent</option>
+                </select>
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Ville</label>
+                <input class="dash-input" type="text" id="ar-city" placeholder="Cotonou">
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Photo artiste</label>
+                <input class="dash-input" type="file" id="ar-image-file" accept="image/jpeg,image/png,image/webp" style="padding:0.4rem;">
+                <img id="ar-image-preview" src="" alt="" style="display:none;margin-top:8px;max-height:120px;border-radius:8px;object-fit:cover;">
+                <input type="hidden" id="ar-image">
+              </div>
+              <div class="dash-field" style="grid-column:1/-1;">
+                <label class="dash-label">Biographie</label>
+                <textarea class="dash-textarea" id="ar-bio" placeholder="Biographie de l'artiste…"></textarea>
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Spotify URL</label>
+                <input class="dash-input" type="url" id="ar-spotify" placeholder="https://open.spotify.com/...">
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">YouTube URL</label>
+                <input class="dash-input" type="url" id="ar-youtube" placeholder="https://youtube.com/...">
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Instagram URL</label>
+                <input class="dash-input" type="url" id="ar-instagram" placeholder="https://instagram.com/...">
+              </div>
+              <div class="dash-field" style="display:flex;align-items:center;gap:8px;padding-top:1.5rem;">
+                <input type="checkbox" id="ar-verified" style="width:16px;height:16px;accent-color:var(--green);">
+                <label for="ar-verified" style="font-family:'Figtree',sans-serif;font-size:0.88rem;">Artiste vérifié ✓</label>
+              </div>
+            </div>
+            <button class="dash-submit" type="submit">
+              <i class="fas fa-plus"></i> Ajouter l'artiste
+            </button>
+          </form>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-title">🎤 Artistes en base</div>
+          <table class="dash-table">
+            <thead><tr><th>Nom</th><th>Genre</th><th>Génération</th><th>Vérifié</th><th>Action</th></tr></thead>
+            <tbody id="artists-table"><tr><td colspan="5" style="text-align:center;color:#aaa;padding:1.5rem;">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PANEL: POSTS ── -->
+      <div class="dash-panel" id="panel-posts">
+        <div class="dash-title">Modération des publications 📝</div>
+        <div class="dash-subtitle">Surveille et supprime les publications inappropriées</div>
+        <div class="dash-card">
+          <table class="dash-table">
+            <thead><tr><th>Auteur</th><th>Contenu</th><th>Date</th><th>Likes</th><th>Action</th></tr></thead>
+            <tbody id="all-posts-table"><tr><td colspan="5" style="text-align:center;color:#aaa;padding:1.5rem;">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── PANEL: USERS ── -->
+      <div class="dash-panel" id="panel-users">
+        <div class="dash-title">Utilisateurs 👥</div>
+        <div class="dash-subtitle">Gère les rôles et les comptes utilisateurs</div>
+        <div class="dash-card">
+          <table class="dash-table">
+            <thead><tr><th>Nom</th><th>Username</th><th>Rôle</th><th>Inscrit le</th><th>Action</th></tr></thead>
+            <tbody id="users-table"><tr><td colspan="5" style="text-align:center;color:#aaa;padding:1.5rem;">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- ── PANEL: ANALYTICS ── -->
+      <div class="dash-panel" id="panel-analytics">
+        <div class="dash-title">Statistiques de visites <i class="fas fa-chart-line" style="font-size:1.2rem;margin-left:0.4rem;color:var(--green);"></i></div>
+        <div class="dash-subtitle">Nombre de visiteurs et de pages vues sur le site</div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-eye" style="color:var(--green);"></i></div>
+            <div class="stat-card-value" id="ana-visits">—</div>
+            <div class="stat-card-label">Pages vues (total)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-calendar-day" style="color:var(--yellow);"></i></div>
+            <div class="stat-card-value" id="ana-today">—</div>
+            <div class="stat-card-label">Vues aujourd'hui</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-calendar-week" style="color:var(--red);"></i></div>
+            <div class="stat-card-value" id="ana-week">—</div>
+            <div class="stat-card-label">Vues cette semaine</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-user-clock" style="color:#6432c8;"></i></div>
+            <div class="stat-card-value" id="ana-unique">—</div>
+            <div class="stat-card-label">Visiteurs uniques</div>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-title"><i class="fas fa-file-alt" style="margin-right:8px;color:var(--green);"></i>Pages les plus visitées</div>
+          <table class="dash-table">
+            <thead><tr><th>Page</th><th>Vues</th><th>% du total</th></tr></thead>
+            <tbody id="analytics-pages-table">
+              <tr><td colspan="3" style="text-align:center;color:#aaa;padding:1.5rem;">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-title"><i class="fas fa-chart-bar" style="margin-right:8px;color:var(--yellow);"></i>Visites par jour (7 derniers jours)</div>
+          <div id="analytics-chart" style="padding:1rem 0;">
+            <div style="text-align:center;color:#aaa;padding:1.5rem;">Chargement…</div>
+          </div>
+        </div>
+
+        <div class="dash-card" style="background:linear-gradient(135deg,rgba(0,120,71,0.04),rgba(252,209,22,0.06));border:1px solid rgba(0,120,71,0.15);">
+          <div class="dash-card-title"><i class="fas fa-info-circle" style="margin-right:8px;color:var(--green);"></i>Activer le tracking</div>
+          <p style="font-size:0.88rem;color:var(--text-light);line-height:1.7;margin-bottom:1rem;">
+            Si les stats affichent "—", exécute ce SQL dans Supabase → SQL Editor pour créer la table de tracking :
+          </p>
+          <pre style="background:#1a1a2e;color:#FCD116;padding:1rem;border-radius:10px;font-size:0.75rem;overflow-x:auto;line-height:1.6;">CREATE TABLE IF NOT EXISTS page_views (
+  id         UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  page       TEXT NOT NULL,
+  referrer   TEXT DEFAULT '',
+  user_id    UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE page_views ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "pv_insert" ON page_views FOR INSERT WITH CHECK (true);
+CREATE POLICY "pv_admin"  ON page_views FOR SELECT USING (
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+);
+CREATE OR REPLACE FUNCTION track_page_view(p_page TEXT, p_referrer TEXT DEFAULT '')
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN INSERT INTO page_views (page, referrer, user_id) VALUES (p_page, p_referrer, auth.uid()); END;
+$$;</pre>
+        </div>
+      </div>
+
+
+      <!-- ── PANEL: MESSAGES CONTACT ── -->
+      <div class="dash-panel" id="panel-messages">
+        <div class="dash-title">Messages de contact <i class="fas fa-envelope" style="font-size:1.2rem;margin-left:0.4rem;color:var(--green);"></i></div>
+        <div class="dash-subtitle">Messages reçus depuis la page de contact</div>
+        <div class="dash-card">
+          <table class="dash-table">
+            <thead><tr><th>Nom</th><th>Email</th><th>Sujet</th><th>Message</th><th>Date</th><th>Statut</th><th>Action</th></tr></thead>
+            <tbody id="messages-table"><tr><td colspan="6" style="text-align:center;color:#aaa;padding:1.5rem;">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+
+    </main>
+  </div>
+
+  <script src="js/supabase.js"></script>
+  <script src="js/storage.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+
+    const ADMIN_EMAIL = 'isaacyomakou@gmail.com';
+
+    document.querySelector('.dash-layout').style.visibility = 'hidden';
+
+    const user = await getCurrentUser();
+    if (!user) { window.location.href = 'login.html'; return; }
+
+    const profile = await getCurrentProfile();
+    const isAdmin = profile?.role === 'admin' && user.email === ADMIN_EMAIL;
+
+    if (!isAdmin) { window.location.href = 'index.html'; return; }
+
+    document.querySelector('.dash-layout').style.visibility = 'visible';
+
+    // ── Navigation ──
+    document.querySelectorAll('.dash-nav-item[data-target]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.dash-nav-item').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.dash-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.target).classList.add('active');
+        if (btn.dataset.target === 'panel-events')  loadEventsPanel();
+        if (btn.dataset.target === 'panel-artists') loadArtistsPanel();
+        if (btn.dataset.target === 'panel-posts')   loadPostsPanel();
+        if (btn.dataset.target === 'panel-users')   loadUsersPanel();
+        if (btn.dataset.target === 'panel-analytics') loadAnalyticsPanel();
+        if (btn.dataset.target === 'panel-messages')  loadMessagesPanel();
+      });
+    });
+
+    document.getElementById('dash-logout').addEventListener('click', signOut);
+
+    loadOverview();
+
+    // ── Upload image événement → bucket events ──
+    initImageUpload('ev-image-file', 'ev-image-preview', 'events', 'covers', (url) => {
+      document.getElementById('ev-image').value = url;
+    });
+
+    // ── Upload image artiste → bucket artists ──
+    initImageUpload('ar-image-file', 'ar-image-preview', 'artists', 'photos', (url) => {
+      document.getElementById('ar-image').value = url;
+    });
+
+    // ── Formulaire Événement ──
+    document.getElementById('form-add-event').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-add-event');
+      btn.disabled = true; btn.textContent = 'Création…';
+
+      const { error } = await _supabase.from('events').insert({
+        title:       document.getElementById('ev-title').value.trim(),
+        category:    document.getElementById('ev-category').value,
+        event_date:  document.getElementById('ev-date').value,
+        city:        document.getElementById('ev-city').value.trim(),
+        location:    document.getElementById('ev-location').value.trim(),
+        price:       document.getElementById('ev-price').value.trim(),
+        description: document.getElementById('ev-desc').value.trim(),
+        image_url:   document.getElementById('ev-image').value.trim() || null,
+        ticket_url:  document.getElementById('ev-tickets').value.trim() || null,
+        is_free:     document.getElementById('ev-free').checked,
+        is_published: true
+      });
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-plus"></i> Créer l\'événement';
+
+      if (error) { showToast(error.message, 'error'); return; }
+      showToast('Événement créé ! ✓');
+      e.target.reset();
+      document.getElementById('ev-image').value = '';
+      document.getElementById('ev-image-preview').style.display = 'none';
+      loadEventsPanel();
+    });
+
+    // ── Formulaire Artiste ──
+    document.getElementById('form-add-artist').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('ar-name').value.trim();
+      const slug  = document.getElementById('ar-slug').value.trim()
+        || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+
+      const { error } = await _supabase.from('artists').insert({
+        name,
+        slug,
+        genre:         document.getElementById('ar-genre').value.trim(),
+        generation:    document.getElementById('ar-generation').value,
+        city:          document.getElementById('ar-city').value.trim(),
+        image_url:     document.getElementById('ar-image').value.trim() || null,
+        bio:           document.getElementById('ar-bio').value.trim(),
+        spotify_url:   document.getElementById('ar-spotify').value.trim() || null,
+        youtube_url:   document.getElementById('ar-youtube').value.trim() || null,
+        instagram_url: document.getElementById('ar-instagram').value.trim() || null,
+        is_verified:   document.getElementById('ar-verified').checked,
+        is_published:  true
+      });
+
+      if (error) { showToast(error.message, 'error'); return; }
+      showToast('Artiste ajouté ! ✓');
+      e.target.reset();
+      document.getElementById('ar-image').value = '';
+      document.getElementById('ar-image-preview').style.display = 'none';
+      loadArtistsPanel();
+    });
+
+    // Auto-slug depuis le nom
+    document.getElementById('ar-name').addEventListener('input', (e) => {
+      document.getElementById('ar-slug').value =
+        e.target.value.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    });
+  });
+
+  // ── Overview ──
+  async function loadOverview() {
+    const counts = await Promise.all([
+      _supabase.from('profiles').select('*', {count:'exact',head:true}),
+      _supabase.from('posts').select('*',    {count:'exact',head:true}),
+      _supabase.from('likes').select('*',    {count:'exact',head:true}),
+      _supabase.from('comments').select('*', {count:'exact',head:true}),
+      _supabase.from('events').select('*',   {count:'exact',head:true}),
+      _supabase.from('artists').select('*',  {count:'exact',head:true}),
+    ]);
+    const ids = ['stat-users','stat-posts','stat-likes','stat-comments','stat-events','stat-artists'];
+    counts.forEach((r,i) => { document.getElementById(ids[i]).textContent = r.count ?? '—'; });
+
+    const { data: posts } = await _supabase.from('posts')
+      .select('*, profiles:user_id(display_name,username)')
+      .order('created_at',{ascending:false}).limit(10);
+
+    document.getElementById('recent-posts-table').innerHTML =
+      posts?.map(p => `
+        <tr>
+          <td>${p.profiles?.display_name || p.profiles?.username || '?'}</td>
+          <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escDash(p.content)}</td>
+          <td>${new Date(p.created_at).toLocaleDateString('fr-FR')}</td>
+          <td>${p.likes_count||0}</td>
+          <td><button class="btn-del" onclick="deletePost('${p.id}',this)"><i class="fas fa-trash"></i></button></td>
+        </tr>`).join('')
+      || '<tr><td colspan="5" style="text-align:center;color:#aaa;">Aucune publication</td></tr>';
+  }
+
+  // ── Panel Events ──
+  async function loadEventsPanel() {
+    const { data } = await _supabase.from('events').select('*').order('event_date',{ascending:false}).limit(20);
+    document.getElementById('events-table').innerHTML =
+      data?.map(ev => `
+        <tr>
+          <td><strong>${ev.title}</strong></td>
+          <td>${new Date(ev.event_date).toLocaleDateString('fr-FR')}</td>
+          <td>${ev.city||'—'}</td>
+          <td><span style="text-transform:capitalize;">${ev.category||'—'}</span></td>
+          <td><button class="btn-del" onclick="deleteEvent('${ev.id}',this)"><i class="fas fa-trash"></i> Supprimer</button></td>
+        </tr>`).join('')
+      || '<tr><td colspan="5" style="text-align:center;color:#aaa;">Aucun événement</td></tr>';
+  }
+
+  // ── Panel Artists ──
+  async function loadArtistsPanel() {
+    const { data } = await _supabase.from('artists').select('*').order('name');
+    document.getElementById('artists-table').innerHTML =
+      data?.map(a => `
+        <tr>
+          <td>
+            ${a.image_url ? `<img src="${a.image_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;margin-right:8px;vertical-align:middle;">` : ''}
+            <strong>${a.name}</strong>
+          </td>
+          <td>${a.genre||'—'}</td>
+          <td style="text-transform:capitalize;">${a.generation||'—'}</td>
+          <td>${a.is_verified ? '<span style="color:var(--green);">✓ Oui</span>' : 'Non'}</td>
+          <td><button class="btn-del" onclick="deleteArtist('${a.id}',this)"><i class="fas fa-trash"></i></button></td>
+        </tr>`).join('')
+      || '<tr><td colspan="5" style="text-align:center;color:#aaa;">Aucun artiste</td></tr>';
+  }
+
+  // ── Panel Posts ──
+  async function loadPostsPanel() {
+    const { data } = await _supabase.from('posts')
+      .select('*, profiles:user_id(display_name,username)')
+      .order('created_at',{ascending:false}).limit(30);
+    document.getElementById('all-posts-table').innerHTML =
+      data?.map(p => `
+        <tr>
+          <td>${p.profiles?.display_name || p.profiles?.username || '?'}</td>
+          <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escDash(p.content)}</td>
+          <td>${new Date(p.created_at).toLocaleDateString('fr-FR')}</td>
+          <td>${p.likes_count||0}</td>
+          <td><button class="btn-del" onclick="deletePost('${p.id}',this)"><i class="fas fa-trash"></i></button></td>
+        </tr>`).join('')
+      || '<tr><td colspan="5" style="text-align:center;color:#aaa;">Aucune publication</td></tr>';
+  }
+
+  // ── Panel Users ──
+  async function loadUsersPanel() {
+    const { data } = await _supabase.from('profiles').select('*').order('created_at',{ascending:false}).limit(50);
+    document.getElementById('users-table').innerHTML =
+      data?.map(u => `
+        <tr>
+          <td>${u.display_name||'—'}</td>
+          <td>@${u.username}</td>
+          <td><span class="badge-role badge-${u.role||'user'}">${u.role||'user'}</span></td>
+          <td>${new Date(u.created_at).toLocaleDateString('fr-FR')}</td>
+          <td>
+            <select onchange="changeRole('${u.id}',this.value)" style="border:1px solid #ddd;border-radius:6px;padding:3px 6px;font-size:0.8rem;cursor:pointer;">
+              <option value="user"   ${u.role==='user'  ?'selected':''}>user</option>
+              <option value="admin"  ${u.role==='admin' ?'selected':''}>admin</option>
+              <option value="artist" ${u.role==='artist'?'selected':''}>artist</option>
+            </select>
+          </td>
+        </tr>`).join('')
+      || '<tr><td colspan="5" style="text-align:center;color:#aaa;">Aucun utilisateur</td></tr>';
+  }
+
+  // ── Actions ──
+  async function deleteEvent(id, btn) {
+    if (!confirm('Supprimer cet événement ?')) return;
+    await _supabase.from('events').delete().eq('id', id);
+    btn.closest('tr').remove();
+    showToast('Événement supprimé');
+  }
+
+  async function deleteArtist(id, btn) {
+    if (!confirm('Supprimer cet artiste ?')) return;
+    await _supabase.from('artists').delete().eq('id', id);
+    btn.closest('tr').remove();
+    showToast('Artiste supprimé');
+  }
+
+  async function deletePost(id, btn) {
+    if (!confirm('Supprimer cette publication ?')) return;
+    await _supabase.from('posts').delete().eq('id', id);
+    btn.closest('tr').remove();
+    showToast('Publication supprimée');
+  }
+
+  async function changeRole(userId, newRole) {
+    await _supabase.from('profiles').update({ role: newRole }).eq('id', userId);
+    showToast(`Rôle mis à jour : ${newRole} ✓`);
+  }
+
+  // ── Panel Analytics ──
+  async function loadAnalyticsPanel() {
+    // Total vues
+    const total = await _supabase.from('page_views').select('*', {count:'exact',head:true});
+    document.getElementById('ana-visits').textContent = total.count ?? '—';
+
+    // Vues aujourd'hui
+    const today = new Date(); today.setHours(0,0,0,0);
+    const todayRes = await _supabase.from('page_views').select('*', {count:'exact',head:true})
+      .gte('created_at', today.toISOString());
+    document.getElementById('ana-today').textContent = todayRes.count ?? '—';
+
+    // Vues cette semaine
+    const week = new Date(); week.setDate(week.getDate() - 7);
+    const weekRes = await _supabase.from('page_views').select('*', {count:'exact',head:true})
+      .gte('created_at', week.toISOString());
+    document.getElementById('ana-week').textContent = weekRes.count ?? '—';
+
+    // Clics artistes (pages contenant 'artist-profile')
+    const clicks = await _supabase.from('page_views').select('*', {count:'exact',head:true})
+      .ilike('page', '%artist-profile%');
+    document.getElementById('ana-clicks').textContent = clicks.count ?? '—';
+
+    // Pages les plus visitées
+    const { data: pages } = await _supabase.from('page_views')
+      .select('page, created_at')
+      .order('created_at', {ascending: false})
+      .limit(200);
+
+    if (pages) {
+      const pageCounts = {};
+      const pageLastVisit = {};
+      pages.forEach(p => {
+        const name = p.page.split('?')[0].split('#')[0].split('/').pop() || 'index';
+        pageCounts[name] = (pageCounts[name] || 0) + 1;
+        if (!pageLastVisit[name] || p.created_at > pageLastVisit[name]) pageLastVisit[name] = p.created_at;
+      });
+      const sorted = Object.entries(pageCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+      document.getElementById('analytics-pages-table').innerHTML = sorted.map(([page, count]) => `
+        <tr>
+          <td><i class="fas fa-file" style="color:var(--green);margin-right:6px;"></i>${page}</td>
+          <td><strong>${count}</strong></td>
+          <td style="color:var(--text-light);font-size:0.82rem;">${new Date(pageLastVisit[page]).toLocaleDateString('fr-FR')}</td>
+        </tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:#aaa;">Aucune donnée</td></tr>';
+
+      // Artistes les plus consultés
+      const artistViews = pages.filter(p => p.page.includes('artist-profile'));
+      const artistCounts = {};
+      const artistLast = {};
+      artistViews.forEach(p => {
+        const hash = p.page.split('#')[1] || p.page.split('slug=')[1] || 'inconnu';
+        const slug = decodeURIComponent(hash).split('&')[0];
+        artistCounts[slug] = (artistCounts[slug] || 0) + 1;
+        if (!artistLast[slug] || p.created_at > artistLast[slug]) artistLast[slug] = p.created_at;
+      });
+      const sortedArtists = Object.entries(artistCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+      document.getElementById('analytics-artists-table').innerHTML = sortedArtists.map(([slug, count]) => `
+        <tr>
+          <td><i class="fas fa-music" style="color:var(--yellow);margin-right:6px;"></i>${slug}</td>
+          <td><strong>${count}</strong></td>
+          <td style="color:var(--text-light);font-size:0.82rem;">${new Date(artistLast[slug]).toLocaleDateString('fr-FR')}</td>
+        </tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:#aaa;">Aucun clic enregistré</td></tr>';
+    }
+  }
+
+  // ── Panel Analytics ──
+  async function loadAnalyticsPanel() {
+    // Total
+    const total = await _supabase.from('page_views').select('*', {count:'exact', head:true});
+    document.getElementById('ana-visits').textContent = total.count ?? '—';
+
+    // Aujourd'hui
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const todayRes = await _supabase.from('page_views').select('*', {count:'exact', head:true})
+      .gte('created_at', todayStart.toISOString());
+    document.getElementById('ana-today').textContent = todayRes.count ?? '—';
+
+    // Cette semaine
+    const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - 7);
+    const weekRes = await _supabase.from('page_views').select('*', {count:'exact', head:true})
+      .gte('created_at', weekStart.toISOString());
+    document.getElementById('ana-week').textContent = weekRes.count ?? '—';
+
+    // Visiteurs uniques (par user_id non null)
+    const uniqueRes = await _supabase.from('page_views').select('user_id')
+      .not('user_id', 'is', null);
+    const uniqueUsers = new Set((uniqueRes.data||[]).map(r => r.user_id));
+    document.getElementById('ana-unique').textContent = uniqueUsers.size || '—';
+
+    // Pages les plus visitées
+    const allPages = await _supabase.from('page_views').select('page');
+    const pageMap = {};
+    (allPages.data||[]).forEach(r => { pageMap[r.page] = (pageMap[r.page]||0) + 1; });
+    const sortedPages = Object.entries(pageMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    const totalViews = (allPages.data||[]).length || 1;
+
+    document.getElementById('analytics-pages-table').innerHTML = sortedPages.length
+      ? sortedPages.map(([page, count]) => `
+          <tr>
+            <td><i class="fas fa-file" style="color:var(--green);margin-right:8px;"></i>${page}</td>
+            <td><strong>${count}</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;background:#f0f0f0;border-radius:999px;height:6px;overflow:hidden;">
+                  <div style="width:${Math.round(count/totalViews*100)}%;background:var(--green);height:100%;border-radius:999px;"></div>
+                </div>
+                <span style="font-size:0.78rem;color:var(--text-light);">${Math.round(count/totalViews*100)}%</span>
+              </div>
+            </td>
+          </tr>`).join('')
+      : '<tr><td colspan="3" style="text-align:center;color:#aaa;">Aucune visite enregistrée — Ajoute analytics.js dans tes pages</td></tr>';
+
+    // Graphique 7 jours
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i); d.setHours(0,0,0,0);
+      const d2 = new Date(d); d2.setHours(23,59,59,999);
+      days.push({ label: d.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric'}), start: d, end: d2 });
+    }
+    const chartData = await Promise.all(days.map(async (day) => {
+      const r = await _supabase.from('page_views').select('*', {count:'exact', head:true})
+        .gte('created_at', day.start.toISOString())
+        .lte('created_at', day.end.toISOString());
+      return { label: day.label, count: r.count || 0 };
+    }));
+    const maxCount = Math.max(...chartData.map(d => d.count), 1);
+    document.getElementById('analytics-chart').innerHTML =
+      '<div style="display:flex;align-items:flex-end;gap:8px;height:140px;padding:0 0.5rem;">' +
+      chartData.map(d => `
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <span style="font-size:0.7rem;font-weight:700;color:var(--dark);">${d.count||''}</span>
+          <div style="width:100%;background:linear-gradient(to top,#007847,#FCD116);border-radius:6px 6px 0 0;height:${Math.round(d.count/maxCount*100)}px;min-height:${d.count>0?'4':'2'}px;opacity:${d.count>0?'1':'0.2'};transition:height 0.3s;"></div>
+          <span style="font-size:0.65rem;color:var(--text-light);text-align:center;">${d.label}</span>
+        </div>`).join('') +
+      '</div>';
+  }
+
+  async function loadMessagesPanel() {
+    const { data } = await _supabase.from('contact_messages')
+      .select('*').order('created_at', {ascending: false}).limit(50);
+    const tbody = document.getElementById('messages-table');
+    const subjectLabels = {
+      question:'Question', partenariat:'Partenariat',
+      artiste:'Artiste', bug:'Bug', autre:'Autre'
+    };
+    tbody.innerHTML = data?.map(m => `
+      <tr style="${m.is_read?'':'background:rgba(0,120,71,0.04);font-weight:600;'}">
+        <td>${m.name}</td>
+        <td><a href="mailto:${m.email}" style="color:var(--green);">${m.email}</a></td>
+        <td><span style="background:rgba(0,120,71,0.1);color:var(--green);padding:2px 8px;border-radius:999px;font-size:0.75rem;">${subjectLabels[m.subject]||m.subject}</span></td>
+        <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escDash(m.message)}</td>
+        <td>${new Date(m.created_at).toLocaleDateString('fr-FR')}</td>
+        <td>
+          ${m.is_read
+            ? '<span style="color:#aaa;font-size:0.78rem;"><i class="fas fa-check"></i> Lu</span>'
+            : `<button class="btn-del" style="background:rgba(0,120,71,0.1);color:var(--green);" onclick="markRead('${m.id}',this)"><i class="fas fa-eye"></i> Marquer lu</button>`
+          }
+        </td>
+        <td><button class="btn-del" onclick="deleteMessage('${m.id}',this)" title="Supprimer"><i class="fas fa-trash"></i></button></td>
+      </tr>`).join('')
+      || '<tr><td colspan="6" style="text-align:center;color:#aaa;">Aucun message</td></tr>';
+
+    // Badge non lus
+    const unread = (data||[]).filter(m => !m.is_read).length;
+    const badge  = document.getElementById('msg-badge');
+    if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? 'inline' : 'none'; }
+  }
+
+  async function markRead(id, btn) {
+    await _supabase.from('contact_messages').update({ is_read: true }).eq('id', id);
+    btn.closest('tr').style.background = '';
+    btn.closest('tr').style.fontWeight = '';
+    btn.outerHTML = '<span style="color:#aaa;font-size:0.78rem;"><i class="fas fa-check"></i> Lu</span>';
+    showToast('Message marqué comme lu ✓');
+  }
+
+  async function deleteMessage(id, btn) {
+    if (!confirm('Supprimer définitivement ce message ?')) return;
+    const { error } = await _supabase.from('contact_messages').delete().eq('id', id);
+    if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
+    btn.closest('tr').remove();
+    showToast('Message supprimé');
+  }
+
+  function escDash(t) {
+    return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  </script>
+</body>
+</html>

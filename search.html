@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recherche — BéninMusic</title>
+  <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .search-page { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .search-hero { text-align: center; padding: 2rem 0 1.5rem; }
+    .search-hero h1 { font-family: 'Poppins', sans-serif; font-size: clamp(1.6rem,3vw,2.5rem); font-weight: 800; margin-bottom: 0.5rem; }
+    .search-hero p { color: var(--text-light); font-size: 0.9rem; }
+    .search-bar-big {
+      display: flex; align-items: center; gap: 12px;
+      background: #fff; border: 2px solid #eee; border-radius: 999px;
+      padding: 14px 20px; margin: 1.5rem 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-bar-big:focus-within {
+      border-color: var(--yellow);
+      box-shadow: 0 0 0 4px rgba(252,209,22,0.12), 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .search-bar-big i { color: var(--gray-3); font-size: 1.1rem; flex-shrink: 0; }
+    .search-bar-big input {
+      border: none; outline: none; font-family: 'Figtree', sans-serif;
+      font-size: 1rem; color: var(--dark); width: 100%; background: transparent;
+    }
+    .search-bar-big button {
+      background: linear-gradient(90deg,#007847,#FCD116,#CE1126);
+      border: none; border-radius: 999px; padding: 0.5rem 1.2rem;
+      font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700;
+      color: #111; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    .search-tabs { display: flex; gap: 0.4rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .search-tab {
+      font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.5px; padding: 0.55rem 1.2rem; border-radius: 999px;
+      border: 1.5px solid #ddd; background: transparent; color: #888;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .search-tab.active { background: var(--dark); color: #fff; border-color: var(--dark); }
+    .search-tab:hover:not(.active) { border-color: var(--green); color: var(--green); }
+    .search-results { min-height: 200px; }
+    .result-section { margin-bottom: 2.5rem; }
+    .result-section-title {
+      font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px; color: #888;
+      margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #f0f0f0;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .artist-result {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem; background: #fff; border-radius: 14px; margin-bottom: 0.8rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05); text-decoration: none; color: inherit;
+      transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;
+    }
+    .artist-result:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+    .artist-result-img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .artist-result-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+    .artist-result-genre { font-size: 0.8rem; color: var(--text-light); margin-top: 2px; }
+    .user-result {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.9rem; background: #fff; border-radius: 14px; margin-bottom: 0.7rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05); text-decoration: none; color: inherit;
+      transition: transform 0.2s;
+    }
+    .user-result:hover { transform: translateY(-2px); }
+    .user-result-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .user-result-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.92rem; }
+    .user-result-username { font-size: 0.8rem; color: var(--text-light); }
+    .post-result {
+      background: #fff; border-radius: 14px; padding: 1rem 1.2rem;
+      margin-bottom: 0.8rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .post-result-author { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .post-result-text { font-size: 0.9rem; color: var(--text); line-height: 1.5; }
+    .post-result-meta { font-size: 0.75rem; color: var(--gray-3); margin-top: 0.5rem; }
+    .tags-cloud { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .tag-pill {
+      background: #f5f5f5; border-radius: 999px; padding: 0.4rem 1rem;
+      font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 600;
+      color: #555; cursor: pointer; text-decoration: none;
+      transition: background 0.2s, color 0.2s; border: 1.5px solid transparent;
+    }
+    .tag-pill:hover { background: var(--dark); color: #fff; }
+    .search-empty { text-align: center; padding: 3rem; color: var(--gray-3); }
+    .search-empty-icon { font-size: 3rem; margin-bottom: 0.8rem; opacity: 0.4; }
+  </style>
+</head>
+<body>
+
+  <div class="music-quote-strip" style="height:4px;min-height:4px;"></div>
+  <div id="app-header" data-active="search"></div>
+
+  <div class="search-page">
+    <div class="search-hero">
+      <h1>Rechercher <span class="text-gradient">sur BéninMusic</span></h1>
+      <p>Artistes, utilisateurs, publications, hashtags…</p>
+    </div>
+
+    <div class="search-bar-big">
+      <i class="fas fa-search"></i>
+      <input type="text" id="main-search" placeholder="Angélique Kidjo, #afrobeats, @isaac_yom…" autocomplete="off">
+      <button id="search-btn"><i class="fas fa-search" style="margin-right:5px;"></i>Rechercher</button>
+    </div>
+
+    <div class="search-tabs">
+      <button class="search-tab active" data-tab="all"><i class="fas fa-th-large" style="margin-right:5px;"></i>Tout</button>
+      <button class="search-tab" data-tab="artists"><i class="fas fa-microphone" style="margin-right:5px;"></i>Artistes</button>
+      <button class="search-tab" data-tab="users"><i class="fas fa-users" style="margin-right:5px;"></i>Utilisateurs</button>
+      <button class="search-tab" data-tab="posts"><i class="fas fa-newspaper" style="margin-right:5px;"></i>Publications</button>
+    </div>
+
+    <div class="search-results" id="search-results">
+      <div id="initial-state">
+        <div class="result-section">
+          <div class="result-section-title"><i class="fas fa-fire" style="color:var(--red);"></i> Tags populaires</div>
+          <div class="tags-cloud" id="popular-tags">
+            <span class="tag-pill" onclick="doSearch('#BéninMusic')">#BéninMusic</span>
+            <span class="tag-pill" onclick="doSearch('#Afrobeats')">#Afrobeats</span>
+            <span class="tag-pill" onclick="doSearch('#Cotonou')">#Cotonou</span>
+            <span class="tag-pill" onclick="doSearch('#Musique')">#Musique</span>
+            <span class="tag-pill" onclick="doSearch('#Concert')">#Concert</span>
+            <span class="tag-pill" onclick="doSearch('#Bénin')">#Bénin</span>
+            <span class="tag-pill" onclick="doSearch('#Gospel')">#Gospel</span>
+            <span class="tag-pill" onclick="doSearch('#Jazz')">#Jazz</span>
+          </div>
+        </div>
+        <div class="result-section">
+          <div class="result-section-title"><i class="fas fa-star" style="color:var(--yellow);"></i> Artistes en vedette</div>
+          <div id="featured-artists"><div class="loading-spinner" style="margin:1rem auto;"></div></div>
+        </div>
+      </div>
+      <div id="results-container" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div id="app-footer"></div>
+  <div id="cookie-slot"></div>
+
+  <script src="js/components.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/analytics.js"></script>
+  <script>
+  var currentTab = 'all';
+  var lastQuery  = '';
+
+  // ── Génère le lien artiste avec hash (fonctionne en local et Vercel)
+  function artistLink(a) {
+    var slug = a.slug;
+    if (!slug || slug.trim() === '') {
+      slug = a.name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-');
+    }
+    return 'artist-profile.html#' + encodeURIComponent(slug);
+  }
+
+  function escH(t) { return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    loadFeaturedArtists();
+
+    // Tabs
+    document.querySelectorAll('.search-tab').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.search-tab').forEach(function(t){ t.classList.remove('active'); });
+        tab.classList.add('active');
+        currentTab = tab.dataset.tab;
+        if (lastQuery) performSearch(lastQuery);
+      });
+    });
+
+    // Bouton rechercher
+    document.getElementById('search-btn').addEventListener('click', function() {
+      var q = document.getElementById('main-search').value.trim();
+      if (q) performSearch(q);
+    });
+
+    // Entrée clavier
+    document.getElementById('main-search').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        var q = document.getElementById('main-search').value.trim();
+        if (q) performSearch(q);
+      }
+    });
+
+    // Recherche live avec debounce
+    var timer;
+    document.getElementById('main-search').addEventListener('input', function(e) {
+      clearTimeout(timer);
+      var q = e.target.value.trim();
+      if (q.length >= 2) {
+        timer = setTimeout(function(){ performSearch(q); }, 400);
+      } else if (!q) {
+        showInitialState();
+      }
+    });
+  });
+
+  function doSearch(q) {
+    document.getElementById('main-search').value = q;
+    performSearch(q);
+  }
+
+  async function loadFeaturedArtists() {
+    var res = await _supabase.from('artists').select('*').limit(4);
+    var container = document.getElementById('featured-artists');
+
+    if (!res.data || res.data.length === 0) {
+      container.innerHTML =
+        '<p style="color:var(--text-light);font-size:0.88rem;">Aucun artiste en base. Ajoutez-en depuis le dashboard.</p>';
+      return;
+    }
+
+    container.innerHTML = res.data.map(function(a) {
+      var img = a.image_url || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(a.name) + '&background=007847&color=fff&bold=true');
+      return '<a href="' + artistLink(a) + '" class="artist-result">' +
+        '<img class="artist-result-img" src="' + escH(img) + '" alt="' + escH(a.name) + '"' +
+          ' onerror="this.src=\'https://ui-avatars.com/api/?name=A&background=007847&color=fff\'">' +
+        '<div>' +
+          '<div class="artist-result-name">' + escH(a.name) +
+            (a.is_verified ? ' <i class="fas fa-check-circle" style="color:var(--green);font-size:0.75rem;"></i>' : '') +
+          '</div>' +
+          '<div class="artist-result-genre">' + escH(a.genre || 'Artiste béninois') + '</div>' +
+        '</div>' +
+      '</a>';
+    }).join('');
+  }
+
+  async function performSearch(query) {
+    lastQuery = query;
+    var q        = query.toLowerCase().replace(/^#/, '').replace(/^@/, '');
+    var isHashtag = query.charAt(0) === '#';
+
+    document.getElementById('initial-state').style.display = 'none';
+    var container = document.getElementById('results-container');
+    container.style.display = 'block';
+    container.innerHTML = '<div class="loading-spinner" style="margin:3rem auto;"></div>';
+
+    var artists = [], users = [], posts = [];
+
+    if (currentTab === 'all' || currentTab === 'artists') {
+      var ra = await _supabase.from('artists').select('*').ilike('name', '%' + q + '%').limit(6);
+      artists = ra.data || [];
+    }
+    if ((currentTab === 'all' || currentTab === 'users') && !isHashtag) {
+      var ru = await _supabase.from('profiles').select('id, username, display_name, avatar_url, bio')
+        .or('username.ilike.%' + q + '%,display_name.ilike.%' + q + '%').limit(8);
+      users = ru.data || [];
+    }
+    if (currentTab === 'all' || currentTab === 'posts') {
+      var rp = await _supabase.from('posts')
+        .select('*, profiles:user_id (username, display_name, avatar_url)')
+        .ilike('content', '%' + (isHashtag ? '#' + q : q) + '%')
+        .order('created_at', { ascending: false }).limit(10);
+      posts = rp.data || [];
+    }
+
+    renderResults(query, artists, users, posts);
+  }
+
+  function renderResults(query, artists, users, posts) {
+    var container = document.getElementById('results-container');
+    var total = artists.length + users.length + posts.length;
+
+    if (total === 0) {
+      container.innerHTML =
+        '<div class="search-empty">' +
+          '<div class="search-empty-icon"><i class="fas fa-search"></i></div>' +
+          '<div style="font-family:\'Syne\',sans-serif;font-weight:700;margin-bottom:0.4rem;">Aucun résultat pour "' + escH(query) + '"</div>' +
+          '<p style="font-size:0.85rem;">Essaie avec d\'autres mots-clés ou explore les artistes.</p>' +
+          '<a href="artists.html" style="display:inline-block;margin-top:1rem;color:var(--green);font-weight:600;font-size:0.88rem;">' +
+            '<i class="fas fa-arrow-right" style="margin-right:5px;"></i>Voir tous les artistes</a>' +
+        '</div>';
+      return;
+    }
+
+    var html = '<div style="font-family:\'Syne\',sans-serif;font-size:0.82rem;color:var(--gray-3);margin-bottom:1.5rem;">' +
+      total + ' résultat' + (total > 1 ? 's' : '') + ' pour <strong>"' + escH(query) + '"</strong></div>';
+
+    if (artists.length) {
+      html += '<div class="result-section">' +
+        '<div class="result-section-title"><i class="fas fa-microphone" style="color:var(--green);"></i> Artistes (' + artists.length + ')</div>' +
+        artists.map(function(a) {
+          var img = a.image_url || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(a.name) + '&background=007847&color=fff&bold=true');
+          return '<a href="' + artistLink(a) + '" class="artist-result">' +
+            '<img class="artist-result-img" src="' + escH(img) + '" alt="' + escH(a.name) + '"' +
+              ' onerror="this.src=\'https://ui-avatars.com/api/?name=A&background=007847&color=fff\'">' +
+            '<div>' +
+              '<div class="artist-result-name">' + escH(a.name) +
+                (a.is_verified ? ' <i class="fas fa-check-circle" style="color:var(--green);font-size:0.75rem;"></i>' : '') +
+              '</div>' +
+              '<div class="artist-result-genre">' + escH(a.genre || 'Artiste béninois') + ' · ' + escH(a.city || 'Bénin') + '</div>' +
+            '</div>' +
+          '</a>';
+        }).join('') +
+      '</div>';
+    }
+
+    if (users.length) {
+      html += '<div class="result-section">' +
+        '<div class="result-section-title"><i class="fas fa-users" style="color:var(--yellow);"></i> Utilisateurs (' + users.length + ')</div>' +
+        users.map(function(u) {
+          var av = u.avatar_url || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(u.display_name||u.username||'U') + '&background=007847&color=fff&bold=true');
+          return '<a href="profile.html?id=' + u.id + '" class="user-result">' +
+            '<img class="user-result-avatar" src="' + escH(av) + '" alt="' + escH(u.display_name||u.username) + '">' +
+            '<div>' +
+              '<div class="user-result-name">' + escH(u.display_name || u.username) + '</div>' +
+              '<div class="user-result-username">@' + escH(u.username) + '</div>' +
+            '</div>' +
+          '</a>';
+        }).join('') +
+      '</div>';
+    }
+
+    if (posts.length) {
+      html += '<div class="result-section">' +
+        '<div class="result-section-title"><i class="fas fa-newspaper" style="color:var(--red);"></i> Publications (' + posts.length + ')</div>' +
+        posts.map(function(p) {
+          return '<div class="post-result">' +
+            '<div class="post-result-author">' + escH(p.profiles?.display_name || p.profiles?.username || 'Utilisateur') + '</div>' +
+            '<div class="post-result-text">' + highlight(escH(p.content), query) + '</div>' +
+            '<div class="post-result-meta">' + formatDate(p.created_at) + ' · <span style="color:var(--red);"><i class="fas fa-heart" style="margin-right:3px;"></i>' + (p.likes_count||0) + '</span></div>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  function showInitialState() {
+    document.getElementById('initial-state').style.display = 'block';
+    document.getElementById('results-container').style.display = 'none';
+  }
+
+  function highlight(text, query) {
+    if (!query) return text;
+    var q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp(q, 'gi'), function(m) {
+      return '<mark style="background:rgba(252,209,22,0.4);border-radius:3px;padding:0 2px;">' + m + '</mark>';
+    });
+  }
+  </script>
+</body>
+</html>

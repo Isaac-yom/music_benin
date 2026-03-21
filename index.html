@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BéninMusic — Musique Béninoise & Réseau Social Musical</title>
+  <!-- ══ SEO : META DE BASE ══ -->
+  <meta name="description" content="BéninMusic — Le premier réseau social dédié à la musique béninoise. Découvrez artistes, concerts, festivals et actualités de la scène musicale du Bénin et de la diaspora.">
+  <meta name="keywords" content="musique béninoise, artistes bénin, concerts bénin, afrobeats bénin, réseau social musical, Cotonou musique, Angélique Kidjo, musique africaine, BéninMusic">
+  <meta name="author" content="Isaac Yomakou — BéninMusic">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://musicbenin.vercel.app/">
+
+  <!-- ══ SEO : OPEN GRAPH (Facebook, WhatsApp, LinkedIn) ══ -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="BéninMusic — Musique Béninoise & Réseau Social Musical">
+  <meta property="og:description" content="Découvrez les artistes musicaux béninois, partagez vos coups de cœur et connectez-vous avec des fans du monde entier. Concerts, festivals, actualités.">
+  <meta property="og:image" content="https://musicbenin.vercel.app/image/og-cover.jpg">
+  <meta property="og:image:alt" content="BéninMusic — Musique Béninoise">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://musicbenin.vercel.app/">
+  <meta property="og:site_name" content="BéninMusic">
+  <meta property="og:locale" content="fr_FR">
+
+  <!-- ══ SEO : TWITTER / X CARD ══ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="BéninMusic — Musique Béninoise & Réseau Social Musical">
+  <meta name="twitter:description" content="Découvrez les artistes musicaux béninois, concerts, festivals et actualités. La communauté musicale du Bénin.">
+  <meta name="twitter:image" content="https://musicbenin.vercel.app/image/og-cover.jpg">
+
+  <!-- ══ SEO : SCHEMA.ORG (Google Rich Results) ══ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "BéninMusic",
+    "alternateName": "Music Bénin",
+    "url": "https://musicbenin.vercel.app/",
+    "description": "Le premier réseau social dédié à la musique béninoise. Artistes, concerts, festivals et actualités.",
+    "inLanguage": "fr-FR",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://musicbenin.vercel.app/search.html?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "BéninMusic",
+      "url": "https://musicbenin.vercel.app/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg"
+      },
+      "sameAs": [
+        "https://wa.me/2290158507828"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+229-01-58-50-78-28",
+        "contactType": "customer service",
+        "availableLanguage": ["French"]
+      }
+    }
+  }
+  </script>
+  <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- PRELOADER -->
+  <div id="preloader">
+    <canvas id="stars"></canvas>
+    <div class="loader">
+      <div class="loader-content">
+        <div class="box top-left"></div>
+        <div class="box top-right"></div>
+        <div class="box bottom-right"></div>
+        <div class="box bottom-left"></div>
+      </div>
+      <h2>
+        Bienvenue au Bénin
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg" alt="Drapeau du Bénin" style="width:24px;height:16px;vertical-align:middle;">
+        , au cœur de la musique moderne africaine
+      </h2>
+    </div>
+  </div>
+
+  <!-- La bande est cachée via CSS, le header est sticky top:0 -->
+  <div class="music-quote-strip" style="display:none;"></div>
+
+  <!-- HEADER — sticky, top:0, z-index:900 -->
+  <div id="app-header" data-active="home"></div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Explorez, partagez et célébrez<br>
+        la musique béninoise moderne
+      </h1>
+      <div class="hero-cta">
+        <a href="register.html" class="hero-btn hero-btn-primary">
+          <i class="fas fa-user-plus"></i> Rejoindre
+        </a>
+        <a href="login.html" class="hero-btn hero-btn-secondary">
+          <i class="fas fa-sign-in-alt"></i> Se connecter
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS BANNER -->
+  <section style="background:var(--dark);padding:3rem 1.5rem;">
+    <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:2rem;text-align:center;">
+      <div>
+        <div id="stat-artists-count" style="font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;background:linear-gradient(90deg,#007847,#FCD116,#CE1126);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">…</div>
+        <div style="color:rgba(255,255,255,0.5);font-size:0.88rem;margin-top:4px;">Artistes répertoriés</div>
+      </div>
+      <div>
+        <div id="stat-events-count" style="font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;background:linear-gradient(90deg,#007847,#FCD116,#CE1126);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">…</div>
+        <div style="color:rgba(255,255,255,0.5);font-size:0.88rem;margin-top:4px;">Événements à venir</div>
+      </div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;background:linear-gradient(90deg,#007847,#FCD116,#CE1126);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">∞</div>
+        <div style="color:rgba(255,255,255,0.5);font-size:0.88rem;margin-top:4px;">Partages & découvertes</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION ARTISTES -->
+  <div class="section" style="margin-top:3.5rem;">
+    <h2 class="section-title">
+      Aperçu des artistes qui ont façonné <span class="highlight">la musique béninoise</span>
+    </h2>
+  </div>
+
+  <section class="artists-section">
+    <div class="artists-grid" id="home-artists-grid" style="padding:0;gap:2rem;">
+      <!-- Squelettes -->
+      <div class="artist-card" style="opacity:0.4;pointer-events:none;">
+        <div class="artist-image" style="background:var(--gray-2);"></div>
+        <div class="artist-info"><div style="height:1rem;background:var(--gray-2);border-radius:6px;margin-bottom:0.5rem;"></div><div style="height:0.8rem;background:var(--gray-2);border-radius:6px;width:70%;"></div></div>
+      </div>
+      <div class="artist-card" style="opacity:0.3;pointer-events:none;">
+        <div class="artist-image" style="background:var(--gray-2);"></div>
+        <div class="artist-info"><div style="height:1rem;background:var(--gray-2);border-radius:6px;margin-bottom:0.5rem;"></div><div style="height:0.8rem;background:var(--gray-2);border-radius:6px;width:60%;"></div></div>
+      </div>
+      <div class="artist-card" style="opacity:0.2;pointer-events:none;">
+        <div class="artist-image" style="background:var(--gray-2);"></div>
+        <div class="artist-info"><div style="height:1rem;background:var(--gray-2);border-radius:6px;margin-bottom:0.5rem;"></div><div style="height:0.8rem;background:var(--gray-2);border-radius:6px;width:50%;"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOUTON VOIR TOUS LES ARTISTES -->
+  <div style="text-align:center;margin:2rem 0 0;">
+    <a href="artists.html" class="transition-btn" style="display:inline-flex;">
+      <i class="fas fa-users" style="margin-right:8px;"></i>Voir tous les artistes
+    </a>
+  </div>
+
+  <!-- NOUVELLE GENERATION -->
+  <section class="transition" style="margin-top:3rem;">
+    <div class="transition-content">
+      <h3>Une nouvelle génération en mouvement</h3>
+      <p>
+        De nouvelles voix émergent et portent l'héritage musical béninois
+        vers une scène contemporaine et internationale.
+      </p>
+      <a href="artists.html" class="transition-btn">
+        Découvrir la nouvelle génération <span>→</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- CTA REJOINDRE -->
+  <section style="padding:5rem 1.5rem;background:var(--dark);text-align:center;">
+    <div style="max-width:700px;margin:0 auto;">
+      <h2 style="font-family:'Poppins',sans-serif;font-size:clamp(1.8rem,3vw,2.8rem);font-weight:800;color:white;margin-bottom:1rem;">
+        Rejoignez la communauté
+      </h2>
+      <p style="color:rgba(255,255,255,0.5);font-size:1rem;line-height:1.8;margin-bottom:2.5rem;">
+        Partagez vos coups de cœur, suivez vos artistes préférés et restez informé des dernières actualités de la scène musicale béninoise.
+      </p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+        <!-- Bouton principal : inscription -->
+        <a style="font-family: 'Poppins',sans-serif;" href="register.html" class="cta-btn-primary">
+          <i class="fas fa-user-plus"></i> S'inscrire gratuitement
+        </a>
+        <!-- Bouton secondaire : voir les événements (à la place de "parcourir sans compte") -->
+        <a href="events.html" class="btn-outline-green">
+          <i class="fas fa-calendar-alt"></i> Voir les événements
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <div id="app-footer"></div>
+  <div id="cookie-slot"></div>
+
+  <script src="js/components.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/analytics.js"></script>
+  <script>
+  var GEN_LABELS = { pioneer: 'Pionnier', new: 'Nouvelle génération', emerging: 'Émergent' };
+  var GEN_ICONS  = { pioneer: 'fa-trophy', new: 'fa-rocket', emerging: 'fa-star' };
+  var GEN_COLORS = { pioneer: 'rgba(252,209,22,0.15)', new: 'rgba(0,120,71,0.12)', emerging: 'rgba(206,17,38,0.1)' };
+  var GEN_TEXT   = { pioneer: '#997a00', new: '#007847', emerging: '#CE1126' };
+
+  document.addEventListener('DOMContentLoaded', async function() {
+
+    // Compteur artistes
+    var countA = await _supabase.from('artists').select('*', { count: 'exact', head: true });
+    var statA  = document.getElementById('stat-artists-count');
+    if (statA) statA.textContent = (countA.count || 0) + '+';
+
+    // Compteur événements à venir
+    var countE = await _supabase.from('events').select('*', { count: 'exact', head: true })
+      .gte('event_date', new Date().toISOString());
+    var statE  = document.getElementById('stat-events-count');
+    if (statE) statE.textContent = (countE.count || 0) + '+';
+
+    // Charge 8 artistes
+    var result = await _supabase
+      .from('artists')
+      .select('id, name, slug, image_url, genre, city, bio, is_verified, generation')
+      .order('name')
+      .limit(8);
+
+    var grid = document.getElementById('home-artists-grid');
+
+    if (!result.data || result.data.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-light);">' +
+        '<i class="fas fa-music" style="font-size:2.5rem;margin-bottom:1rem;display:block;color:var(--green);"></i>' +
+        '<p>Aucun artiste pour l\'instant. Ajoutez-en depuis le dashboard !</p></div>';
+      return;
+    }
+
+    grid.innerHTML = result.data.map(function(a) {
+      var slug = a.slug;
+      if (!slug || slug.trim() === '') {
+        slug = a.name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-');
+      }
+
+      var img = a.image_url
+        ? a.image_url
+        : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(a.name) + '&background=007847&color=fff&size=230&bold=true';
+
+      var genBadge = '';
+      if (a.generation && GEN_LABELS[a.generation]) {
+        genBadge = '<span style="display:inline-block;padding:0.2rem 0.7rem;border-radius:999px;font-size:0.72rem;font-weight:700;margin-bottom:0.5rem;background:' +
+          GEN_COLORS[a.generation] + ';color:' + GEN_TEXT[a.generation] + ';">' +
+          '<i class="fas ' + GEN_ICONS[a.generation] + '" style="margin-right:4px;"></i>' +
+          GEN_LABELS[a.generation] + '</span>';
+      }
+
+      var verifiedBadge = a.is_verified
+        ? '<span style="position:absolute;top:12px;right:12px;background:var(--green);color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;box-shadow:0 2px 8px rgba(0,120,71,0.4);"><i class="fas fa-check"></i></span>'
+        : '';
+
+      var genreCity  = (a.genre || '') + (a.genre && a.city ? ' · ' : '') + (a.city || '');
+      var bioSnippet = a.bio
+        ? '<p style="font-size:0.82rem;color:var(--text-light);margin-top:0.4rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + a.bio + '</p>'
+        : '';
+
+      var profileLink = 'artist-profile.html#' + encodeURIComponent(slug);
+
+      return '<article class="artist-card" data-slug="' + slug + '" style="cursor:pointer;position:relative;" onclick="if(!event.target.closest(\'a\')){window.location=\'' + profileLink + '\'}">' +
+        '<div class="artist-image" style="position:relative;">' +
+          '<img src="' + img + '" alt="' + a.name + '" loading="lazy">' + verifiedBadge +
+        '</div>' +
+        '<div class="artist-info">' +
+          genBadge +
+          '<h3 class="artist-name">' + a.name + '</h3>' +
+          '<p class="artist-role" style="font-size:0.83rem;color:var(--text-light);">' + genreCity + '</p>' +
+          bioSnippet +
+          '<div class="artist-actions" style="margin-top:0.8rem;">' +
+            '<a href="' + profileLink + '" class="artist-link">' +
+              '<i class="fas fa-user" style="margin-right:5px;"></i>Voir le profil' +
+            '</a>' +
+          '</div>' +
+        '</div>' +
+      '</article>';
+    }).join('');
+  });
+  </script>
+</body>
+</html>

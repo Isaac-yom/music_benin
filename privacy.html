@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Politique de confidentialité — BéninMusic</title>
+  <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .legal-page { max-width: 800px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+    .legal-hero { margin-bottom: 3rem; }
+    .legal-hero h1 { font-family: 'Poppins', sans-serif; font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 800; margin-bottom: 0.5rem; }
+    .legal-hero p { color: var(--text-light); font-size: 0.9rem; }
+    .legal-toc { background: #f8f9fb; border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 3rem; border-left: 4px solid var(--yellow); }
+    .legal-toc-title { font-family: 'Syne', sans-serif; font-weight: 700; margin-bottom: 0.8rem; font-size: 0.95rem; }
+    .legal-toc a { display: block; font-size: 0.88rem; color: var(--green); margin-bottom: 0.4rem; text-decoration: none; }
+    .legal-toc a:hover { text-decoration: underline; }
+    .legal-section { margin-bottom: 3rem; scroll-margin-top: 100px; }
+    .legal-section h2 { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #f0f0f0; }
+    .legal-section h3 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 600; margin: 1.2rem 0 0.5rem; color: #333; }
+    .legal-section p, .legal-section li { font-family: 'Figtree', sans-serif; font-size: 0.92rem; color: #555; line-height: 1.8; margin-bottom: 0.8rem; }
+    .legal-section ul { padding-left: 1.5rem; }
+    .data-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-family: 'Figtree', sans-serif; font-size: 0.85rem; }
+    .data-table th { background: #f0f0f0; padding: 10px 14px; text-align: left; font-weight: 600; }
+    .data-table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; color: #555; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .rights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; }
+    .right-card { background: #f8f9fb; border-radius: 12px; padding: 1rem; text-align: center; }
+    .right-card-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+    .right-card-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; }
+    .right-card-desc { font-size: 0.78rem; color: var(--text-light); margin-top: 0.3rem; }
+    .legal-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(252,209,22,0.15); border-radius: 999px; padding: 0.3rem 0.8rem; font-size: 0.78rem; font-weight: 600; color: #888; margin-bottom: 1rem; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--text-light); font-size: 0.85rem; text-decoration: none; margin-bottom: 2rem; }
+    .back-link:hover { color: var(--green); }
+    .right-card-icon {font-size: 1.4rem; color: var(--green); margin-bottom: 6px;}
+  </style>
+</head>
+<body>
+
+  <div class="music-quote-strip" style="height:4px;min-height:4px;"></div>
+  <div id="app-header"></div>
+
+  <div class="legal-page">
+    <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Retour à l'accueil</a>
+
+    <div class="legal-hero">
+      <h1>Politique de <span class="text-gradient">confidentialité</span></h1>
+      <p>Dernière mise à jour : Mars 2026 · Nous respectons vos données personnelles.</p>
+    </div>
+
+    <div class="legal-toc">
+      <div class="legal-toc-title">Sommaire</div>
+      <a href="#collecte">1. Données collectées</a>
+      <a href="#utilisation">2. Utilisation des données</a>
+      <a href="#stockage">3. Stockage et sécurité</a>
+      <a href="#partage">4. Partage des données</a>
+      <a href="#droits">5. Vos droits</a>
+      <a href="#retention">6. Conservation des données</a>
+      <a href="#contact-privacy">7. Contact DPO</a>
+    </div>
+
+    <!-- 1. COLLECTE -->
+    <section class="legal-section" id="collecte">
+      <div class="legal-badge"><i class="fas fa-database"></i> Données</div>
+      <h2>1. Données collectées</h2>
+      <p>BéninMusic collecte uniquement les données nécessaires au fonctionnement de la plateforme :</p>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>Type de donnée</th><th>Quand</th><th>Finalité</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Adresse email</strong></td><td>À l'inscription</td><td>Authentification, notifications</td></tr>
+          <tr><td><strong>Nom d'utilisateur</strong></td><td>À l'inscription</td><td>Identification sur la plateforme</td></tr>
+          <tr><td><strong>Nom affiché</strong></td><td>À l'inscription</td><td>Affichage public sur le profil</td></tr>
+          <tr><td><strong>Bio, localisation, site web</strong></td><td>Optionnel, profil</td><td>Complétion du profil public</td></tr>
+          <tr><td><strong>Photo de profil</strong></td><td>Optionnel</td><td>Avatar affiché publiquement</td></tr>
+          <tr><td><strong>Publications, commentaires, likes</strong></td><td>À l'utilisation</td><td>Fonctionnement du réseau social</td></tr>
+          <tr><td><strong>Adresse IP</strong></td><td>Automatique</td><td>Sécurité, logs serveur (Supabase/Vercel)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 2. UTILISATION -->
+    <section class="legal-section" id="utilisation">
+      <div class="legal-badge"><i class="fas fa-cog"></i> Utilisation</div>
+      <h2>2. Utilisation des données</h2>
+      <p>Vos données sont utilisées exclusivement pour :</p>
+      <ul>
+        <li>Vous authentifier et maintenir votre session</li>
+        <li>Afficher votre profil public aux autres membres</li>
+        <li>Permettre les fonctionnalités sociales (publications, commentaires, likes, abonnements)</li>
+        <li>Vous envoyer des notifications importantes relatives à votre compte</li>
+        <li>Améliorer la sécurité et prévenir les abus</li>
+      </ul>
+      <p><strong>BéninMusic ne vend jamais vos données à des tiers et n'affiche pas de publicités ciblées.</strong></p>
+    </section>
+
+    <!-- 3. STOCKAGE -->
+    <section class="legal-section" id="stockage">
+      <div class="legal-badge"><i class="fas fa-lock"></i> Sécurité</div>
+      <h2>3. Stockage et sécurité</h2>
+      <h3>Infrastructure</h3>
+      <ul>
+        <li><strong>Base de données :</strong> Supabase (PostgreSQL) avec chiffrement au repos et en transit (TLS)</li>
+        <li><strong>Mots de passe :</strong> Jamais stockés en clair — hachés avec bcrypt via Supabase Auth</li>
+        <li><strong>Médias :</strong> Stockés sur Supabase Storage (AWS S3) avec accès contrôlé</li>
+        <li><strong>Frontend :</strong> Servi via Vercel avec HTTPS obligatoire</li>
+      </ul>
+      <h3>Accès aux données</h3>
+      <p>Seul l'administrateur du projet (Isaac Yom) a accès à la console Supabase. Les données sont protégées par Row Level Security (RLS) : chaque utilisateur ne peut accéder qu'à ses propres données privées.</p>
+    </section>
+
+    <!-- 4. PARTAGE -->
+    <section class="legal-section" id="partage">
+      <div class="legal-badge"><i class="fas fa-share-alt"></i> Partage</div>
+      <h2>4. Partage des données</h2>
+      <p>Vos données ne sont jamais vendues. Elles peuvent être partagées uniquement avec :</p>
+      <ul>
+        <li><strong>Supabase :</strong> Hébergeur de la base de données (sous-traitant)</li>
+        <li><strong>Vercel :</strong> Hébergeur du frontend (logs techniques uniquement)</li>
+        <li><strong>Autorités légales :</strong> En cas d'obligation légale uniquement</li>
+      </ul>
+      <p>Vos publications, commentaires et profil public sont visibles par tous les visiteurs du site, connectés ou non.</p>
+    </section>
+
+    <!-- 5. DROITS -->
+    <section class="legal-section" id="droits">
+      <div class="legal-badge"><i class="fas fa-user-shield"></i> Vos droits</div>
+      <h2>5. Vos droits</h2>
+      <p>Conformément au RGPD et aux lois sur la protection des données, vous disposez des droits suivants :</p>
+      <div class="rights-grid">
+  <div class="right-card">
+    <div class="right-card-icon">
+      <i class="fas fa-eye"></i>
+    </div>
+    <div class="right-card-title">Accès</div>
+    <div class="right-card-desc">Consulter toutes vos données</div>
+  </div>
+
+  <div class="right-card">
+    <div class="right-card-icon">
+      <i class="fas fa-pen"></i>
+    </div>
+    <div class="right-card-title">Rectification</div>
+    <div class="right-card-desc">Corriger vos données</div>
+  </div>
+
+  <div class="right-card">
+    <div class="right-card-icon">
+      <i class="fas fa-trash"></i>
+    </div>
+    <div class="right-card-title">Suppression</div>
+    <div class="right-card-desc">Supprimer votre compte</div>
+  </div>
+
+  <div class="right-card">
+    <div class="right-card-icon">
+      <i class="fas fa-box-archive"></i>
+    </div>
+    <div class="right-card-title">Portabilité</div>
+    <div class="right-card-desc">Exporter vos données</div>
+  </div>
+
+  <div class="right-card">
+    <div class="right-card-icon">
+      <i class="fas fa-ban"></i>
+    </div>
+    <div class="right-card-title">Opposition</div>
+    <div class="right-card-desc">S'opposer à certains traitements</div>
+  </div>
+
+  <div class="right-card">
+    <div class="right-card-icon">
+      <i class="fas fa-pause"></i>
+    </div>
+    <div class="right-card-title">Limitation</div>
+    <div class="right-card-desc">Limiter le traitement</div>
+  </div>
+</div>
+      <p style="margin-top:1rem;">Pour exercer vos droits, contactez-nous via <a href="https://isaac-myportfolio.yomservice.com" style="color:var(--green);">notre portfolio</a>. Réponse sous 30 jours maximum.</p>
+    </section>
+
+    <!-- 6. CONSERVATION -->
+    <section class="legal-section" id="retention">
+      <div class="legal-badge"><i class="fas fa-clock"></i> Conservation</div>
+      <h2>6. Conservation des données</h2>
+      <ul>
+        <li><strong>Compte actif :</strong> Données conservées tant que le compte est actif</li>
+        <li><strong>Après suppression du compte :</strong> Données supprimées sous 30 jours, sauf obligation légale</li>
+        <li><strong>Publications supprimées :</strong> Effacées immédiatement de la base de données</li>
+        <li><strong>Logs serveur :</strong> Conservés 90 jours par Supabase/Vercel</li>
+      </ul>
+    </section>
+
+    <!-- 7. CONTACT -->
+    <section class="legal-section" id="contact-privacy">
+      <div class="legal-badge"><i class="fas fa-envelope"></i> Contact</div>
+      <h2>7. Contact — Protection des données</h2>
+      <p>Pour toute question relative à vos données personnelles ou pour exercer vos droits :</p>
+      <p>📎 <a href="https://isaac-myportfolio.yomservice.com" target="_blank" rel="noopener noreferrer" style="color:var(--green);">isaac-myportfolio.yomservice.com</a></p>
+      <p>En cas de réclamation non résolue, vous pouvez saisir l'autorité de protection des données de votre pays.</p>
+    </section>
+
+    <div style="text-align:center;padding:2rem;border-top:2px solid #f0f0f0;margin-top:2rem;">
+      <a href="legal.html" style="color:var(--green);font-weight:600;font-size:0.9rem;">← Voir les Mentions légales & CGU</a>
+    </div>
+  </div>
+
+  <div id="app-footer"></div>
+  <div id="cookie-slot"></div>
+  <script src="js/components.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/analytics.js"></script>
+</body>
+</html>

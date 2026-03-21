@@ -336,6 +336,7 @@ canvas { position: absolute; inset: 0; }
   background: rgba(255,255,255,0.15); color: white;
   border: 1.5px solid rgba(255,255,255,0.4);
   backdrop-filter: blur(10px);
+  font-family: 'Poppins', sans-serif;
 }
 .hero-btn-secondary:hover { background: rgba(255,255,255,0.25); transform: translateY(-3px); }
 

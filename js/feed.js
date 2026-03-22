@@ -108,16 +108,17 @@ function renderPost(post, isLiked) {
         ${mediaHtml}${linkHtml}
       </div>
       <div class="post-footer">
-        <button class="post-action like-btn ${isLiked ? 'liked' : ''}" data-post-id="${post.id}">
+        <button class="post-action like-btn ${isLiked ? 'liked' : ''}" data-post-id="${post.id}" title="J'aime">
           <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
           <span class="like-count">${post.likes_count || 0}</span>
+          <span class="action-label">J'aime</span>
         </button>
-        <button class="post-action comment-toggle-btn" data-post-id="${post.id}">
-          <i class="far fa-comment"></i><span>${post.comments_count || 0}</span>
+        <button class="post-action comment-toggle-btn" data-post-id="${post.id}" title="Commenter">
+          <i class="far fa-comment-dots"></i>
+          <span>${post.comments_count || 0}</span>
+          <span class="action-label">Commenter</span>
         </button>
-        <button class="post-action share-btn" data-post-id="${post.id}">
-          <i class="fas fa-share"></i><span>Partager / Share</span>
-        </button>
+
       </div>
       <div class="comments-section" id="comments-${post.id}">
         <div class="comments-list" id="comments-list-${post.id}"></div>
@@ -158,19 +159,7 @@ function attachPostEvents() {
     btn.dataset.bound = '1';
     btn.addEventListener('click', () => { const input = document.querySelector(`.comment-input[data-post-id="${btn.dataset.postId}"]`); if (input) submitComment(btn.dataset.postId, input); });
   });
-  document.querySelectorAll('.share-btn:not([data-bound])').forEach(btn => {
-    btn.dataset.bound = '1';
-    btn.addEventListener('click', () => {
-      const postId   = btn.dataset.postId;
-      const postCard = document.querySelector(`.post-card[data-post-id="${postId}"]`);
-      const author   = postCard?.querySelector('.post-author')?.textContent?.trim() || 'BéninMusic';
-      const textEl   = postCard?.querySelector('.post-text');
-      const postText = textEl ? textEl.textContent.trim().substring(0, 120) : '';
-      const url      = `${window.location.origin}${window.location.pathname.replace(/feed\.html.*/,'feed.html')}#post-${postId}`;
-      const title    = `${author} sur BéninMusic`;
-      openSharePanel(url, title, postText, postId);
-    });
-  });
+
   document.querySelectorAll('[data-delete-post]:not([data-bound])').forEach(btn => {
     btn.dataset.bound = '1';
     btn.addEventListener('click', () => deletePost(btn.dataset.deletePost));
@@ -214,16 +203,34 @@ async function loadComments(postId) {
   comments.forEach(c => {
     const profile = c.profiles;
     const avatar  = profile?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.display_name || '?')}&background=007847&color=fff&bold=true&size=34`;
+    const displayName = profile?.display_name || profile?.username || 'Utilisateur';
     list.insertAdjacentHTML('beforeend', `
       <div class="comment-item">
         <img class="comment-avatar" src="${avatar}" alt="">
         <div class="comment-body">
-          <div class="comment-author">${profile?.display_name || profile?.username || 'Utilisateur'}</div>
+          <div class="comment-author">
+            <span class="comment-author-name" data-mention="${displayName}" data-post-id="${postId}"
+              style="cursor:pointer;transition:color 0.15s;"
+              onmouseover="this.style.color='var(--green)'"
+              onmouseout="this.style.color=''"
+              title="Répondre à ${displayName}">${displayName}</span>
+          </div>
           <div class="comment-text">${String(c.content||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-          <div class="comment-time">${formatDate(c.created_at)}</div>
+          <div class="comment-time" style="display:flex;align-items:center;gap:0.8rem;">
+            ${formatDate(c.created_at)}
+            <span class="reply-link" data-mention="${displayName}" data-post-id="${postId}"
+              style="font-size:0.72rem;color:var(--green);font-weight:600;cursor:pointer;opacity:0.7;transition:opacity 0.15s;"
+              onmouseover="this.style.opacity='1'"
+              onmouseout="this.style.opacity='0.7'">
+              <i class="fas fa-reply" style="margin-right:3px;"></i>Répondre
+            </span>
+          </div>
         </div>
       </div>`);
   });
+
+  // Active les handlers de réponse sur cette section
+  attachReplyHandlers(postId);
 }
 
 async function submitComment(postId, inputEl) {
@@ -351,7 +358,7 @@ function initCreatePost() {
 
   submitBtn.addEventListener('click', async () => {
     const content = textarea.value.trim();
-    if (!content && !uploadedMediaUrl && !linkUrl) { showToast('Écris quelque chose ! / Write something!', 'info'); return; }
+    if (!content && !uploadedMediaUrl && !linkUrl) { showToast('Écris quelque chose !', 'info'); return; }
 
     submitBtn.disabled = true; submitBtn.textContent = 'Publication…';
 
@@ -365,7 +372,7 @@ function initCreatePost() {
       .select('*, profiles:user_id (id, username, display_name, avatar_url), likes!left (user_id)')
       .single();
 
-    submitBtn.disabled = false; submitBtn.textContent = 'Publier / Post';
+    submitBtn.disabled = false; submitBtn.textContent = 'Publier';
     if (error) { showToast(error.message, 'error'); return; }
 
     textarea.value = ''; textarea.style.height = 'auto';
@@ -379,7 +386,7 @@ function initCreatePost() {
     container.querySelector('.empty-state')?.remove();
     container.insertAdjacentHTML('afterbegin', renderPost(data, false));
     attachPostEvents();
-    showToast('Publié ! / Posted! 🎵');
+    showToast('Publié !');
     document.querySelectorAll('.my-posts').forEach(el => { el.textContent = (parseInt(el.textContent) || 0) + 1; });
   });
 }
@@ -410,109 +417,36 @@ async function loadTrending() {
   container.innerHTML = sorted.map(([tag,count],i) => `<a href="search.html?q=${encodeURIComponent(tag)}" class="trending-item"><span class="trending-num">${i+1}</span><div class="trending-info"><div class="trending-tag">${tag}</div><div class="trending-count">${count} publication${count>1?'s':''}</div></div></a>`).join('');
 }
 
-// ============================================
-// SHARE PANEL — Partage style réseaux sociaux
-// ============================================
-function openSharePanel(url, title, summary, postId) {
-  // Supprime un panel existant
-  document.getElementById('bm-share-panel')?.remove();
-  document.getElementById('bm-share-overlay')?.remove();
 
-  var overlay = document.createElement('div');
-  overlay.id = 'bm-share-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;backdrop-filter:blur(4px);animation:fadeIn 0.2s;';
+// ── Gère les clics sur les noms et liens "Répondre" dans les commentaires ──
+function attachReplyHandlers(postId) {
+  var list = document.getElementById('comments-list-' + postId);
+  if (!list) return;
 
-  var encoded = encodeURIComponent(url);
-  var encodedTitle = encodeURIComponent(title + ' — ' + summary);
+  list.querySelectorAll('.comment-author-name, .reply-link').forEach(function(el) {
+    if (el.dataset.replyBound) return;
+    el.dataset.replyBound = '1';
+    el.addEventListener('click', function() {
+      var mention  = el.dataset.mention;
+      var inputEl  = document.querySelector('.comment-input[data-post-id="' + postId + '"]');
+      if (!inputEl) return;
 
-  var panel = document.createElement('div');
-  panel.id = 'bm-share-panel';
-  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:1.5rem;z-index:9001;box-shadow:0 -8px 40px rgba(0,0,0,0.2);animation:slideUp 0.25s ease;max-width:520px;margin:0 auto;';
+      // Préremplit l'input avec @Nom
+      var current = inputEl.value.trim();
+      // Si le champ est vide ou commence déjà par ce @, remplace proprement
+      inputEl.value = '@' + mention + ' ';
+      inputEl.focus();
 
-  panel.innerHTML =
-    '<div style="width:40px;height:4px;background:#e0e0e0;border-radius:999px;margin:0 auto 1.2rem;"></div>' +
-    '<h3 style="font-family:Syne,sans-serif;font-weight:700;font-size:1rem;margin-bottom:0.3rem;">Partager cette publication</h3>' +
-    '<p style="font-size:0.8rem;color:#999;margin-bottom:1.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + title + '</p>' +
+      // Met en surbrillance le @mention
+      inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
 
-    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">' +
-
-      // Facebook
-      '<a href="https://www.facebook.com/sharer/sharer.php?u=' + encoded + '" target="_blank" rel="noopener" style="text-decoration:none;text-align:center;">' +
-        '<div style="width:56px;height:56px;border-radius:16px;background:#1877F2;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;transition:opacity 0.2s;">' +
-          '<i class="fab fa-facebook-f" style="color:#fff;font-size:1.3rem;"></i>' +
-        '</div>' +
-        '<span style="font-size:0.72rem;color:#555;font-family:Figtree,sans-serif;">Facebook</span>' +
-      '</a>' +
-
-      // WhatsApp
-      '<a href="https://wa.me/?text=' + encodeURIComponent(title + ' : ' + url) + '" target="_blank" rel="noopener" style="text-decoration:none;text-align:center;">' +
-        '<div style="width:56px;height:56px;border-radius:16px;background:#25D366;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;">' +
-          '<i class="fab fa-whatsapp" style="color:#fff;font-size:1.3rem;"></i>' +
-        '</div>' +
-        '<span style="font-size:0.72rem;color:#555;font-family:Figtree,sans-serif;">WhatsApp</span>' +
-      '</a>' +
-
-      // Twitter/X
-      '<a href="https://twitter.com/intent/tweet?text=' + encodedTitle + '&url=' + encoded + '" target="_blank" rel="noopener" style="text-decoration:none;text-align:center;">' +
-        '<div style="width:56px;height:56px;border-radius:16px;background:#000;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;">' +
-          '<i class="fab fa-x-twitter" style="color:#fff;font-size:1.2rem;"></i>' +
-        '</div>' +
-        '<span style="font-size:0.72rem;color:#555;font-family:Figtree,sans-serif;">Twitter/X</span>' +
-      '</a>' +
-
-      // Telegram
-      '<a href="https://t.me/share/url?url=' + encoded + '&text=' + encodeURIComponent(title) + '" target="_blank" rel="noopener" style="text-decoration:none;text-align:center;">' +
-        '<div style="width:56px;height:56px;border-radius:16px;background:#0088cc;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;">' +
-          '<i class="fab fa-telegram-plane" style="color:#fff;font-size:1.2rem;"></i>' +
-        '</div>' +
-        '<span style="font-size:0.72rem;color:#555;font-family:Figtree,sans-serif;">Telegram</span>' +
-      '</a>' +
-    '</div>' +
-
-    // Copier le lien
-    '<button id="bm-copy-link" style="width:100%;padding:0.85rem;border:1.5px solid #e0e0e0;border-radius:12px;background:#f8f9fb;font-family:Figtree,sans-serif;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;color:#555;transition:all 0.2s;">' +
-      '<i class="fas fa-link" style="color:var(--green);"></i>' +
-      '<span id="bm-copy-text">Copier le lien</span>' +
-    '</button>';
-
-  document.body.appendChild(overlay);
-  document.body.appendChild(panel);
-
-  // CSS animations
-  if (!document.getElementById('bm-share-css')) {
-    var style = document.createElement('style');
-    style.id = 'bm-share-css';
-    style.textContent = '@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}} @keyframes fadeIn{from{opacity:0}to{opacity:1}}';
-    document.head.appendChild(style);
-  }
-
-  // Copier lien
-  document.getElementById('bm-copy-link').addEventListener('click', function() {
-    navigator.clipboard.writeText(url).then(function() {
-      document.getElementById('bm-copy-text').textContent = 'Lien copié ! ✓';
-      document.getElementById('bm-copy-link').style.borderColor = 'var(--green)';
-      document.getElementById('bm-copy-link').style.color = 'var(--green)';
-      setTimeout(function() { closeSharePanel(); }, 1200);
+      // Ouvre la section commentaires si elle n'est pas ouverte
+      var section = document.getElementById('comments-' + postId);
+      if (section && !section.classList.contains('open')) {
+        section.classList.add('open');
+      }
     });
   });
-
-  // Ferme en cliquant l'overlay
-  overlay.addEventListener('click', closeSharePanel);
-
-  // Ferme en glissant vers le bas (swipe down)
-  var startY = 0;
-  panel.addEventListener('touchstart', function(e){ startY = e.touches[0].clientY; }, { passive: true });
-  panel.addEventListener('touchend', function(e){
-    if (e.changedTouches[0].clientY - startY > 80) closeSharePanel();
-  });
-}
-
-function closeSharePanel() {
-  var panel   = document.getElementById('bm-share-panel');
-  var overlay = document.getElementById('bm-share-overlay');
-  if (panel)   { panel.style.transform = 'translateY(100%)'; panel.style.transition = '0.25s'; }
-  if (overlay) { overlay.style.opacity = '0'; overlay.style.transition = '0.25s'; }
-  setTimeout(function() { panel?.remove(); overlay?.remove(); }, 260);
 }
 
 function initSidebar() {

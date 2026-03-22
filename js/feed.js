@@ -9,13 +9,16 @@ let postsOffset    = 0;
 const POSTS_PER_PAGE = 10;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  currentUser = await requireAuth();
-  if (!currentUser) return;
-
-  currentProfile = await getCurrentProfile();
-  initUserUI();
+  // Utilise getCurrentUser() (pas requireAuth) : le feed est public
+  // Les non-connectés peuvent lire, seul le create-post est bloqué
+  currentUser = await getCurrentUser();
+  if (currentUser) {
+    currentProfile = await getCurrentProfile();
+    initUserUI();
+    initCreatePost();
+  }
+  // Le feed se charge toujours, connecté ou non
   await loadFeed();
-  initCreatePost();
   initSidebar();
   await loadEvents();
   await loadTrending();
@@ -155,7 +158,7 @@ function attachPostEvents() {
     btn.dataset.bound = '1';
     btn.addEventListener('click', () => { const input = document.querySelector(`.comment-input[data-post-id="${btn.dataset.postId}"]`); if (input) submitComment(btn.dataset.postId, input); });
   });
-  document.querySelectorAll(share-btn:not([data-bound])').forEach(btn => {
+  document.querySelectorAll('.share-btn:not([data-bound])').forEach(btn => {
     btn.dataset.bound = '1';
     btn.addEventListener('click', () => {
       const postId   = btn.dataset.postId;
@@ -442,8 +445,7 @@ function openSharePanel(url, title, summary, postId) {
       '</a>' +
 
       // WhatsApp
-      '<a href="https://wa.me/?text=' + encodeURIComponent(title + '
-' + url) + '" target="_blank" rel="noopener" style="text-decoration:none;text-align:center;">' +
+      '<a href="https://wa.me/?text=' + encodeURIComponent(title + ' : ' + url) + '" target="_blank" rel="noopener" style="text-decoration:none;text-align:center;">' +
         '<div style="width:56px;height:56px;border-radius:16px;background:#25D366;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;">' +
           '<i class="fab fa-whatsapp" style="color:#fff;font-size:1.3rem;"></i>' +
         '</div>' +

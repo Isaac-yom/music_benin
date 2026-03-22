@@ -10,7 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <link rel="stylesheet" href="style.css">
@@ -194,8 +193,17 @@
     render(res.data);
   });
 
+  // Fix timezone : parse la date comme heure LOCALE (pas UTC)
+  function parseLocalDate(s) {
+    if (!s) return new Date();
+    var clean = s.replace('Z','').replace(/[+-]\d{2}:\d{2}$/, '');
+    var m = clean.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    if (!m) return new Date(s);
+    return new Date(+m[1], +m[2]-1, +m[3], +m[4], +m[5]);
+  }
+
   function render(ev) {
-    var d       = new Date(ev.event_date);
+    var d       = parseLocalDate(ev.event_date);
     var dateStr = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
     var timeStr = d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
     var cat     = ev.category || 'other';

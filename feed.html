@@ -2,6 +2,18 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="description" content="Partagez et découvrez les actualités de la scène musicale béninoise. Rejoignez la communauté BéninMusic.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://sitemusicbenin.vercel.app/feed.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="BéninMusic — Fil d'actualité">
+  <meta property="og:description" content="Partagez et découvrez les actualités de la scène musicale béninoise. Rejoignez la communauté BéninMusic.">
+  <meta property="og:url" content="https://sitemusicbenin.vercel.app/feed.html">
+  <meta property="og:site_name" content="BéninMusic">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="BéninMusic — Fil d'actualité">
+  <meta name="twitter:description" content="Partagez et découvrez les actualités de la scène musicale béninoise. Rejoignez la communauté BéninMusic.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fil d'actualité — BéninMusic</title>
   <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/0/0a/Flag_of_Benin.svg">
@@ -108,8 +120,9 @@
       <div class="sidebar-widget">
         <div class="widget-title"><i class="fas fa-music" style="color:var(--yellow);margin-right:6px;"></i> Découvrir</div>
         <a href="artists.html" style="display:flex;align-items:center;gap:10px;padding:10px;background:linear-gradient(135deg,rgba(0,120,71,0.08),rgba(252,209,22,0.08));border-radius:12px;margin-bottom:8px;text-decoration:none;color:var(--dark);">
+          
           <i class="fas fa-guitar" style="font-size:1.5rem;"></i>
-          <div><div style="font-weight:600;font-size:0.88rem;">Artistes Pionniers</div><div style="font-size:0.74rem;color:var(--gray-3);">...</div></div>
+          <div><div style="font-weight:600;font-size:0.88rem;">Artistes Pionniers</div><div style="font-size:0.74rem;color:var(--gray-3);">6 artistes</div></div>
         </a>
       </div>
     </aside>
@@ -123,6 +136,7 @@
   <script src="js/auth.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/feed.js"></script>
+  <script src="js/analytics.js"></script>
 
   <script>
   // Surcharge : feed.html ne redirige PAS si non connecté
@@ -171,6 +185,13 @@
   </script>
 
   <style>
+    /* ── Fix mobile : affiche les compteurs likes/commentaires ── */
+    @media (max-width: 480px) {
+      .post-action span { display: inline !important; }
+      .post-footer { gap: 0.2rem; flex-wrap: nowrap; }
+      .post-action { padding: 6px 8px; font-size: 0.82rem; gap: 4px; }
+    }
+
     .guest-banner { margin-bottom: 1.5rem; }
     .guest-banner-inner {
       background: linear-gradient(135deg, rgba(0,120,71,0.06), rgba(252,209,22,0.08));

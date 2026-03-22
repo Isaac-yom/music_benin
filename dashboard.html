@@ -495,7 +495,7 @@ $$;</pre>
       const { error } = await _supabase.from('events').insert({
         title:       document.getElementById('ev-title').value.trim(),
         category:    document.getElementById('ev-category').value,
-        event_date:  document.getElementById('ev-date').value,
+        event_date:  (function(){ var v = document.getElementById('ev-date').value; return v ? v.replace('T',' ') : v; })(), // format 'YYYY-MM-DD HH:MM' → no timezone conversion
         city:        document.getElementById('ev-city').value.trim(),
         location:    document.getElementById('ev-location').value.trim(),
         price:       document.getElementById('ev-price').value.trim(),

@@ -9,9 +9,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <link rel="stylesheet" href="style.css">
+  <!-- Préconnexion YouTube pour réduire la latence -->
+  <link rel="preconnect" href="https://www.youtube-nocookie.com">
+  <link rel="preconnect" href="https://i.ytimg.com">
+  <link rel="dns-prefetch" href="https://www.youtube-nocookie.com">
   <style>
     .ap-hero{position:relative;height:320px;background:linear-gradient(135deg,#007847 0%,#1a1a2e 60%,#CE1126 100%);overflow:hidden}
     .ap-hero img.cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35}
@@ -39,15 +44,34 @@
     .album-link img{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:0.4rem}
     .al-title{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .al-year{font-size:0.7rem;color:var(--text-light)}
-    .song-row{display:flex;align-items:center;gap:0.9rem;padding:0.65rem 0.3rem;border-bottom:1px solid var(--gray-2);text-decoration:none;color:var(--dark);border-radius:8px;transition:background 0.15s}
-    .song-row:last-child{border-bottom:none}
-    .song-row:hover{background:var(--gray)}
-    .song-num{width:20px;text-align:center;font-size:0.78rem;color:var(--text-light)}
-    .song-img{width:38px;height:38px;border-radius:6px;object-fit:cover;flex-shrink:0}
+    /* ── Grille chansons style Deezer ── */
+    .songs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+    @media(max-width:640px){.songs-grid{grid-template-columns:1fr}}
+    @media(min-width:641px) and (max-width:900px){.songs-grid{grid-template-columns:repeat(2,1fr)}}
+    .song-row{display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.5rem;border-radius:10px;cursor:pointer;transition:background 0.15s;position:relative}
+    .song-row:hover{background:rgba(0,120,71,0.06)}
+    /* Bouton play TOUJOURS visible avec opacité réduite */
+    .song-play-btn { opacity: 0.45 !important; transition: all 0.2s !important; }
+    .song-row:hover .song-play-btn { opacity: 1 !important; transform: scale(1.12); }
+    .song-row.playing .song-play-btn { opacity: 1 !important; color: var(--green) !important; }
+    /* Séparateur */
+    .songs-grid .song-row { border-bottom: 1px solid rgba(0,0,0,0.04); }
+    /* Overlay play sur la pochette au hover */
+    .song-row:hover .img-play-overlay { opacity: 1 !important; }
+    .song-row.playing .img-play-overlay { opacity: 1 !important; background: rgba(0,120,71,0.5) !important; }
+    /* Bouton play : cercle vert visible + fond */
+    .song-play-btn:hover {
+      background: var(--green) !important;
+      color: #fff !important;
+      transform: scale(1.15);
+    }
+    .song-num{width:18px;text-align:center;font-size:0.75rem;color:var(--text-light);flex-shrink:0}
+    .song-img{width:42px;height:42px;border-radius:8px;object-fit:cover;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
     .song-info{flex:1;min-width:0}
-    .song-title{font-family:'Syne',sans-serif;font-size:0.86rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .song-dur{font-size:0.73rem;color:var(--text-light)}
-    .song-play{color:var(--green);opacity:0;font-size:0.95rem;transition:opacity 0.2s}
+    .song-title{font-family:'Syne',sans-serif;font-size:0.83rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--dark)}
+    .song-artist-label{font-size:0.72rem;color:var(--text-light);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .song-dur{font-size:0.7rem;color:var(--gray-3)}
+    .song-play{color:var(--green);opacity:0;font-size:0.9rem;transition:opacity 0.2s;flex-shrink:0}
     .song-row:hover .song-play{opacity:1}
     .info-row{display:flex;align-items:flex-start;gap:0.7rem;padding:0.55rem 0;border-bottom:1px solid var(--gray-2);font-size:0.87rem}
     .info-row:last-child{border-bottom:none}
@@ -55,6 +79,93 @@
     .page-center{display:flex;align-items:center;justify-content:center;min-height:60vh}
     .page-error{text-align:center;padding:4rem 1.5rem;max-width:500px;margin:0 auto}
     #debug-box{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:1rem;margin:1rem 1.5rem;font-family:monospace;font-size:0.8rem;display:none}
+
+    /* ══ PLAYER AUDIO FIXE ══ */
+    #bm-player {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #111; z-index: 8000;
+      padding: 0.75rem 1.5rem;
+      display: none; /* caché par défaut */
+      align-items: center; gap: 1rem;
+      box-shadow: 0 -4px 30px rgba(0,0,0,0.4);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    #bm-player.active { display: flex; }
+    #bm-player-cover {
+      width: 48px; height: 48px; border-radius: 8px;
+      object-fit: cover; flex-shrink: 0;
+    }
+    #bm-player-info { flex: 1; min-width: 0; }
+    #bm-player-title {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.88rem; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #bm-player-artist { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 1px; }
+    #bm-player-controls { display: flex; align-items: center; gap: 0.8rem; flex-shrink: 0; }
+    .bm-ctrl-btn {
+      background: none; border: none; color: rgba(255,255,255,0.7);
+      cursor: pointer; font-size: 1rem; padding: 4px;
+      transition: color 0.2s;
+    }
+    .bm-ctrl-btn:hover { color: #fff; }
+    #bm-play-pause {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--green); border: none; color: #fff;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; transition: background 0.2s, transform 0.15s;
+    }
+    #bm-play-pause:hover { background: #005f38; transform: scale(1.08); }
+    #bm-progress-wrap {
+      flex: 1; display: flex; align-items: center; gap: 8px; min-width: 100px;
+    }
+    #bm-progress {
+      flex: 1; height: 4px; background: rgba(255,255,255,0.15);
+      border-radius: 999px; overflow: hidden; cursor: pointer; position: relative;
+    }
+    #bm-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--yellow));
+      border-radius: 999px; width: 0%; transition: width 0.3s linear;
+      pointer-events: none;
+    }
+    #bm-time { font-size: 0.72rem; color: rgba(255,255,255,0.45); white-space: nowrap; }
+    #bm-close-btn {
+      background: none; border: none; color: rgba(255,255,255,0.35);
+      cursor: pointer; font-size: 0.9rem; padding: 4px; flex-shrink: 0;
+      transition: color 0.2s;
+    }
+    #bm-close-btn:hover { color: #fff; }
+    /* Masque le player YouTube (on joue audio seulement via iframe caché) */
+    #bm-yt-frame { display: none; }
+
+    /* Song row — état playing */
+    .song-row.playing { background: rgba(0,120,71,0.08) !important; }
+    .song-row.playing .song-title { color: var(--green) !important; }
+    .song-row.playing .song-num { display: none; }
+    .song-row.playing .song-num-play { display: flex !important; }
+    .song-num-play {
+      width: 18px; display: none; align-items: center; justify-content: center;
+      color: var(--green); font-size: 0.72rem;
+    }
+    /* Animation barres lecture */
+    .song-row.playing .song-bars { display: flex !important; }
+    .song-bars {
+      display: none; align-items: flex-end; gap: 2px; height: 14px; flex-shrink: 0;
+    }
+    .song-bars span {
+      display: block; width: 3px; background: var(--green); border-radius: 2px;
+      animation: barAnim 0.8s ease-in-out infinite alternate;
+    }
+    .song-bars span:nth-child(2) { animation-delay: 0.2s; }
+    .song-bars span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes barAnim { from { height: 4px; } to { height: 14px; } }
+
+    @media (max-width: 640px) {
+      #bm-player { padding: 0.6rem 1rem; gap: 0.6rem; }
+      #bm-player-cover { width: 38px; height: 38px; }
+      #bm-progress-wrap { min-width: 60px; }
+    }
   </style>
 </head>
 <body>
@@ -72,10 +183,42 @@
   <div id="app-footer"></div>
   <div id="cookie-slot"></div>
 
+  <!-- ══ PLAYER AUDIO FIXE ══ -->
+  <div id="bm-player">
+    <img id="bm-player-cover" src="" alt="Cover">
+    <div id="bm-player-info">
+      <div id="bm-player-title">—</div>
+      <div id="bm-player-artist">—</div>
+    </div>
+    <div id="bm-progress-wrap">
+      <div id="bm-progress">
+        <div id="bm-progress-bar"></div>
+      </div>
+      <span id="bm-time">0:00</span>
+    </div>
+    <div id="bm-player-controls">
+      <button class="bm-ctrl-btn" id="bm-prev" title="Précédent"><i class="fas fa-step-backward"></i></button>
+      <button id="bm-play-pause" title="Lecture / Pause"><i class="fas fa-play" id="bm-play-icon"></i></button>
+      <button class="bm-ctrl-btn" id="bm-next" title="Suivant"><i class="fas fa-step-forward"></i></button>
+    </div>
+    <button id="bm-close-btn" title="Fermer"><i class="fas fa-times"></i></button>
+  </div>
+
+  <!-- iframe YouTube caché pour la lecture audio -->
+  <!-- iframe YouTube : 1px visible (certains navigateurs bloquent autoplay sur display:none) -->
+  <iframe id="bm-yt-frame"
+    allow="autoplay; encrypted-media"
+    allowfullscreen="false"
+    src=""
+    frameborder="0"
+    style="position:fixed;bottom:-2px;right:-2px;width:1px;height:1px;opacity:0.01;pointer-events:none;border:0;z-index:7999;">
+  </iframe>
+  <!-- Audio HTML5 pour les fichiers directs (MP3, etc.) -->
+  <audio id="bm-audio" style="display:none;"></audio>
+
   <script src="js/components.js"></script>
   <script src="js/script.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/analytics.js"></script>
   <script>
   var GEN_LABEL = {pioneer:'Pionnier',new:'Nouvelle génération',emerging:'Émergent'};
   var GEN_ICON  = {pioneer:'fa-trophy',new:'fa-rocket',emerging:'fa-star'};
@@ -157,7 +300,7 @@
     document.title = res.data.name + ' — BéninMusic';
 
     var albumsRes = await _supabase.from('albums').select('*').eq('artist_id', res.data.id).order('release_year',{ascending:false});
-    var songsRes  = await _supabase.from('songs').select('*').eq('artist_id', res.data.id).order('release_year',{ascending:false}).limit(10);
+    var songsRes  = await _supabase.from('songs').select('id,title,duration,youtube_url,spotify_url,audio_url,cover_url,release_year').eq('artist_id', res.data.id).order('release_year',{ascending:false}).limit(20);
 
     render(res.data, albumsRes.data||[], songsRes.data||[]);
   });
@@ -207,17 +350,76 @@
 
     var songsHtml = '';
     if (songs.length) {
-      songsHtml = '<div class="ap-card"><div class="ap-card-title"><i class="fas fa-music" style="color:var(--red);"></i> Chansons populaires</div>'+
+      // Stocke la playlist dans une variable JS globale pour le player
+      var playlistData = songs.map(function(s) {
+        return {
+          id:          s.id,
+          title:       s.title,
+          cover:       s.cover_url || ('https://ui-avatars.com/api/?name='+encodeURIComponent(s.title)+'&background=CE1126&color=fff&size=80&bold=true'),
+          artist:      a.name,
+          youtube_url: s.youtube_url || null,
+          audio_url:   s.audio_url || null,
+          spotify_url: s.spotify_url || null,
+          duration:    s.duration || null
+        };
+      });
+
+      songsHtml = '<div class="ap-card">'+
+        '<div class="ap-card-title" style="margin-bottom:1.2rem;">'+
+          '<div style="display:flex;align-items:center;gap:0.6rem;">'+
+            '<i class="fas fa-headphones" style="color:var(--green);font-size:1.1rem;"></i>'+
+            '<span>Écouter les chansons</span>'+
+          '</div>'+
+          '<span style="font-size:0.72rem;color:var(--text-light);font-weight:400;background:var(--gray);padding:3px 10px;border-radius:999px;">'+songs.length+' titre'+(songs.length>1?'s':'')+'</span>'+
+        '</div>'+
+        '<div class="songs-grid">'+
         songs.map(function(s,i){
-          var c = s.cover_url||('https://ui-avatars.com/api/?name='+encodeURIComponent(s.title)+'&background=CE1126&color=fff&size=80&bold=true');
-          var l = s.youtube_url||s.spotify_url||'#';
-          return '<a href="'+esc(l)+'" target="'+(l!=='#'?'_blank':'_self')+'" rel="noopener" class="song-row">'+
-            '<span class="song-num">'+(i+1)+'</span>'+
-            '<img class="song-img" src="'+esc(c)+'" alt="'+esc(s.title)+'" loading="lazy">'+
-            '<div class="song-info"><div class="song-title">'+esc(s.title)+'</div>'+(s.duration?'<div class="song-dur">'+esc(s.duration)+'</div>':'')+' </div>'+
-            '<i class="fas fa-play song-play"></i>'+
-          '</a>';
+          var cover   = s.cover_url||('https://ui-avatars.com/api/?name='+encodeURIComponent(s.title)+'&background=CE1126&color=fff&size=80&bold=true');
+          var canPlay = !!(s.youtube_url || s.audio_url);
+
+          // Indicateur source : YT = rouge, audio = vert, spotify = vert Spotify
+          var sourceTag = '';
+          if (s.youtube_url) sourceTag = '<span style="font-size:0.62rem;background:rgba(206,17,38,0.08);color:#CE1126;border-radius:4px;padding:1px 5px;font-weight:700;flex-shrink:0;"><i class="fab fa-youtube" style="margin-right:2px;"></i>YT</span>';
+          else if (s.audio_url) sourceTag = '<span style="font-size:0.62rem;background:rgba(0,120,71,0.08);color:var(--green);border-radius:4px;padding:1px 5px;font-weight:700;flex-shrink:0;"><i class="fas fa-music" style="margin-right:2px;"></i>Audio</span>';
+          else if (s.spotify_url) sourceTag = '<span style="font-size:0.62rem;background:rgba(29,185,84,0.08);color:#1DB954;border-radius:4px;padding:1px 5px;font-weight:700;flex-shrink:0;"><i class="fab fa-spotify" style="margin-right:2px;"></i>Spotify</span>';
+
+          return '<div class="song-row" data-song-idx="'+i+'">'+
+            // Numéro ou icône lecture
+            '<div style="width:20px;text-align:center;flex-shrink:0;">'+
+              '<span class="song-num" style="font-size:0.75rem;color:var(--text-light);">'+(i+1)+'</span>'+
+              '<span class="song-num-play" style="display:none;"><i class="fas fa-pause" style="font-size:0.65rem;color:var(--green);"></i></span>'+
+            '</div>'+
+            // Barres d'animation
+            '<div class="song-bars"><span></span><span></span><span></span></div>'+
+            // Pochette avec overlay play
+            '<div style="position:relative;flex-shrink:0;">'+
+              '<img class="song-img" src="'+esc(cover)+'" alt="'+esc(s.title)+'" loading="lazy">'+
+              (canPlay
+                ? '<div style="position:absolute;inset:0;background:rgba(0,0,0,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;" class="img-play-overlay">'+
+                    '<i class="fas fa-play" style="color:#fff;font-size:0.9rem;"></i>'+
+                  '</div>'
+                : '')+
+            '</div>'+
+            // Infos
+            '<div class="song-info">'+
+              '<div class="song-title">'+esc(s.title)+'</div>'+
+              '<div style="display:flex;align-items:center;gap:6px;margin-top:2px;">'+
+                sourceTag+
+                (s.duration?'<span class="song-dur">'+esc(s.duration)+'</span>':'')+
+              '</div>'+
+            '</div>'+
+            // Bouton play principal (toujours visible)
+            (canPlay
+              ? '<button class="song-play-btn" data-song-idx="'+i+'" title="Écouter"'+
+                ' style="border:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--green);background:rgba(0,120,71,0.1);flex-shrink:0;">'+
+                  '<i class="fas fa-play" style="font-size:0.8rem;margin-left:2px;"></i>'+
+                '</button>'
+              : (s.spotify_url
+                ? '<a href="'+esc(s.spotify_url)+'" target="_blank" rel="noopener" style="flex-shrink:0;color:#1DB954;font-size:1rem;background:rgba(29,185,84,0.1);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;" title="Ouvrir Spotify"><i class="fab fa-spotify"></i></a>'
+                : '<span style="width:32px;"></span>'))+
+          '</div>';
         }).join('')+
+        '</div>'+
       '</div>';
     }
 
@@ -251,6 +453,238 @@
           '</div>'+
         '</aside>'+
       '</div>';
+
+    // Initialise le player si des chansons sont disponibles
+    if (songs.length) {
+      initPlayer(playlistData);
+    }
+  }
+
+  // ════════════════════════════════════════════
+  // PLAYER AUDIO — BéninMusic
+  // Gère la lecture YouTube (embed) et audio direct (MP3)
+  // ════════════════════════════════════════════
+  var BM = {
+    playlist:    [],
+    currentIdx:  -1,
+    playing:     false,
+    audioEl:     null,
+    ytFrame:     null,
+    ytAPIReady:  false
+  };
+
+  function initPlayer(playlist) {
+    BM.playlist = playlist;
+    BM.audioEl  = document.getElementById('bm-audio');
+    BM.ytFrame  = document.getElementById('bm-yt-frame');
+
+    // Attache les clics sur les boutons play
+    document.querySelectorAll('.song-play-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var idx = parseInt(btn.dataset.songIdx);
+        if (BM.currentIdx === idx && BM.playing) {
+          pausePlayer();
+        } else {
+          playSong(idx);
+        }
+      });
+    });
+
+    // Clique sur la row entière aussi
+    document.querySelectorAll('.song-row[data-song-idx]').forEach(function(row) {
+      row.addEventListener('click', function() {
+        var idx = parseInt(row.dataset.songIdx);
+        var song = BM.playlist[idx];
+        if (!song || (!song.youtube_url && !song.audio_url)) return;
+        if (BM.currentIdx === idx && BM.playing) {
+          pausePlayer();
+        } else {
+          playSong(idx);
+        }
+      });
+    });
+
+    // Contrôles du player
+    document.getElementById('bm-play-pause').addEventListener('click', function() {
+      if (BM.playing) pausePlayer(); else resumePlayer();
+    });
+    document.getElementById('bm-prev').addEventListener('click', function() {
+      if (BM.currentIdx > 0) playSong(BM.currentIdx - 1);
+    });
+    document.getElementById('bm-next').addEventListener('click', function() {
+      if (BM.currentIdx < BM.playlist.length - 1) playSong(BM.currentIdx + 1);
+    });
+    document.getElementById('bm-close-btn').addEventListener('click', function() {
+      stopPlayer();
+      document.getElementById('bm-player').classList.remove('active');
+    });
+
+    // Barre de progression (audio direct)
+    if (BM.audioEl) {
+      BM.audioEl.addEventListener('timeupdate', updateProgress);
+      BM.audioEl.addEventListener('ended', function() {
+        if (BM.currentIdx < BM.playlist.length - 1) {
+          playSong(BM.currentIdx + 1);
+        } else {
+          stopPlayer();
+        }
+      });
+    }
+
+    // Clic sur la barre de progression
+    document.getElementById('bm-progress').addEventListener('click', function(e) {
+      if (!BM.audioEl || !BM.audioEl.duration) return;
+      var rect = this.getBoundingClientRect();
+      var ratio = (e.clientX - rect.left) / rect.width;
+      BM.audioEl.currentTime = ratio * BM.audioEl.duration;
+    });
+  }
+
+  function playSong(idx) {
+    var song = BM.playlist[idx];
+    if (!song) return;
+
+    // Reset visuel des rows
+    document.querySelectorAll('.song-row').forEach(function(r) { r.classList.remove('playing'); });
+    var targetRow = document.querySelector('.song-row[data-song-idx="' + idx + '"]');
+    if (targetRow) targetRow.classList.add('playing');
+
+    // Met à jour le player bar
+    BM.currentIdx = idx;
+    BM.playing    = true;
+    document.getElementById('bm-player').classList.add('active');
+    document.getElementById('bm-player-cover').src = song.cover;
+    document.getElementById('bm-player-title').textContent = song.title;
+    document.getElementById('bm-player-artist').textContent = song.artist;
+    document.getElementById('bm-play-icon').className = 'fas fa-pause';
+
+    // Met à jour les boutons des rows
+    document.querySelectorAll('.song-play-btn').forEach(function(btn) {
+      var i = parseInt(btn.dataset.songIdx);
+      btn.innerHTML = (i === idx)
+        ? '<i class="fas fa-pause" style="font-size:0.8rem;"></i>'
+        : '<i class="fas fa-play" style="font-size:0.8rem;"></i>';
+      btn.style.background = (i === idx) ? 'rgba(0,120,71,0.2)' : 'rgba(0,120,71,0.1)';
+    });
+
+    // Stoppe ce qui joue
+    if (BM.audioEl) { BM.audioEl.pause(); BM.audioEl.src = ''; }
+
+    // ── Lecture selon le type de source ──
+    if (song.audio_url) {
+      // Fichier audio direct (MP3, WAV, etc.)
+      BM.ytFrame.src = '';
+      BM.audioEl.src = song.audio_url;
+      BM.audioEl.play().catch(function(e) { console.warn('Audio play error:', e); });
+
+    } else if (song.youtube_url) {
+      // YouTube → embed avec autoplay
+      var ytId = extractYoutubeId(song.youtube_url);
+      if (ytId) {
+        BM.audioEl.src = '';
+        // Active autoplay via l'embed YouTube
+        // youtube-nocookie = plus rapide, moins de cookies, autoplay prioritaire
+      BM.ytFrame.src = 'https://www.youtube-nocookie.com/embed/' + ytId +
+          '?autoplay=1&rel=0&modestbranding=1&playsinline=1&start=0&fs=0';
+
+        // Simule la progression (YouTube embed ne donne pas timeupdate)
+        simulateYoutubeProgress(song.duration);
+      }
+    }
+  }
+
+  function pausePlayer() {
+    BM.playing = false;
+    document.getElementById('bm-play-icon').className = 'fas fa-play';
+    document.querySelectorAll('.song-play-btn[data-song-idx="' + BM.currentIdx + '"]').forEach(function(btn) {
+      btn.innerHTML = '<i class="fas fa-play" style="font-size:0.8rem;"></i>';
+    });
+    if (BM.audioEl && BM.audioEl.src) BM.audioEl.pause();
+    if (BM.ytFrame) BM.ytFrame.src = '';  // stoppe l'iframe YT
+    if (BM._ytTimer) clearInterval(BM._ytTimer);
+  }
+
+  function resumePlayer() {
+    if (BM.currentIdx < 0) return;
+    BM.playing = true;
+    document.getElementById('bm-play-icon').className = 'fas fa-pause';
+    document.querySelectorAll('.song-play-btn[data-song-idx="' + BM.currentIdx + '"]').forEach(function(btn) {
+      btn.innerHTML = '<i class="fas fa-pause" style="font-size:0.8rem;"></i>';
+    });
+    var song = BM.playlist[BM.currentIdx];
+    if (song && song.audio_url && BM.audioEl) {
+      BM.audioEl.play().catch(function(e){});
+    } else if (song && song.youtube_url) {
+      // Relance le YouTube
+      var ytId = extractYoutubeId(song.youtube_url);
+      if (ytId) {
+        // youtube-nocookie = plus rapide, moins de cookies, autoplay prioritaire
+      BM.ytFrame.src = 'https://www.youtube-nocookie.com/embed/' + ytId +
+          '?autoplay=1&rel=0&modestbranding=1&playsinline=1&start=0&fs=0';
+      }
+    }
+  }
+
+  function stopPlayer() {
+    BM.playing = false; BM.currentIdx = -1;
+    if (BM.audioEl) { BM.audioEl.pause(); BM.audioEl.src = ''; }
+    if (BM.ytFrame) BM.ytFrame.src = '';
+    if (BM._ytTimer) clearInterval(BM._ytTimer);
+    document.querySelectorAll('.song-row').forEach(function(r) { r.classList.remove('playing'); });
+    document.querySelectorAll('.song-play-btn').forEach(function(btn) {
+      btn.innerHTML = '<i class="fas fa-play" style="font-size:0.8rem;"></i>';
+      btn.style.background = 'rgba(0,120,71,0.1)';
+    });
+    document.getElementById('bm-progress-bar').style.width = '0%';
+    document.getElementById('bm-time').textContent = '0:00';
+    document.getElementById('bm-play-icon').className = 'fas fa-play';
+  }
+
+  function updateProgress() {
+    if (!BM.audioEl || !BM.audioEl.duration) return;
+    var pct = (BM.audioEl.currentTime / BM.audioEl.duration) * 100;
+    document.getElementById('bm-progress-bar').style.width = pct + '%';
+    document.getElementById('bm-time').textContent = formatTime(BM.audioEl.currentTime) + ' / ' + formatTime(BM.audioEl.duration);
+  }
+
+  function simulateYoutubeProgress(durationStr) {
+    // Pour YouTube embed, on simule la progression avec la durée connue
+    if (BM._ytTimer) clearInterval(BM._ytTimer);
+    var total = parseDuration(durationStr) || 180; // 3 min par défaut
+    var elapsed = 0;
+    BM._ytTimer = setInterval(function() {
+      if (!BM.playing) { clearInterval(BM._ytTimer); return; }
+      elapsed++;
+      var pct = Math.min((elapsed / total) * 100, 100);
+      document.getElementById('bm-progress-bar').style.width = pct + '%';
+      document.getElementById('bm-time').textContent = formatTime(elapsed) + ' / ' + formatTime(total);
+      if (elapsed >= total) {
+        clearInterval(BM._ytTimer);
+        if (BM.currentIdx < BM.playlist.length - 1) {
+          setTimeout(function(){ playSong(BM.currentIdx + 1); }, 500);
+        } else {
+          stopPlayer();
+        }
+      }
+    }, 1000);
+  }
+
+  function extractYoutubeId(url) {
+    if (!url) return null;
+    var m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?\s]+)/);
+    return m ? m[1] : null;
+  }
+
+  function formatTime(s) {
+    s = Math.floor(s || 0);
+    return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+  }
+
+  function parseDuration(str) {
+    if (!str) return 0;
+    var m = str.match(/(\d+):(\d+)/);
+    return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : 0;
   }
 
   function showError(title, detail) {

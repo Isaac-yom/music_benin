@@ -105,6 +105,9 @@
       <button class="dash-nav-item" data-target="panel-artists">
         <i class="fas fa-music"></i> Artistes DB
       </button>
+      <button class="dash-nav-item" data-target="panel-songs">
+        <i class="fas fa-headphones"></i> Chansons
+      </button>
       <button class="dash-nav-item" data-target="panel-posts">
         <i class="fas fa-newspaper"></i> Publications
       </button>
@@ -326,6 +329,72 @@
         </div>
       </div>
 
+      <!-- ── PANEL: CHANSONS ── -->
+      <div class="dash-panel" id="panel-songs">
+        <div class="dash-title">Chansons 🎵</div>
+        <div class="dash-subtitle">Ajoute les chansons de chaque artiste avec le lien YouTube ou audio</div>
+
+        <div class="dash-card">
+          <div class="dash-card-title">➕ Ajouter une chanson</div>
+          <form id="form-add-song">
+            <div class="dash-form-grid">
+              <div class="dash-field" style="grid-column:1/-1;">
+                <label class="dash-label">Artiste *</label>
+                <select class="dash-select" id="song-artist-id" required>
+                  <option value="">— Choisir un artiste —</option>
+                </select>
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Titre de la chanson *</label>
+                <input class="dash-input" type="text" id="song-title" placeholder="Ex : Agolo, Pata Pata…" required>
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Durée (ex : 3:45)</label>
+                <input class="dash-input" type="text" id="song-duration" placeholder="3:45">
+              </div>
+              <div class="dash-field" style="grid-column:1/-1;">
+                <label class="dash-label">🔗 Lien YouTube * <span style="font-weight:400;color:var(--green);font-size:0.8rem;">(copie le lien depuis YouTube, Deezer, etc.)</span></label>
+                <input class="dash-input" type="url" id="song-youtube" placeholder="https://www.youtube.com/watch?v=...">
+                <p style="font-size:0.75rem;color:var(--text-light);margin-top:4px;"><i class="fas fa-info-circle" style="color:var(--green);margin-right:4px;"></i>Le lien YouTube permet d'écouter la chanson directement sur le site sans quitter la page.</p>
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Lien Spotify (optionnel)</label>
+                <input class="dash-input" type="url" id="song-spotify" placeholder="https://open.spotify.com/track/...">
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">URL Audio direct (optionnel)</label>
+                <input class="dash-input" type="url" id="song-audio" placeholder="https://... (MP3 direct)">
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Pochette (optionnel)</label>
+                <input class="dash-input" type="url" id="song-cover" placeholder="https://... (image de la chanson)">
+              </div>
+              <div class="dash-field">
+                <label class="dash-label">Année de sortie</label>
+                <input class="dash-input" type="number" id="song-year" placeholder="2024" min="1950" max="2099">
+              </div>
+            </div>
+            <button class="dash-submit" type="submit" id="btn-add-song">
+              <i class="fas fa-plus"></i> Ajouter la chanson
+            </button>
+          </form>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-title">
+            🎵 Chansons en base
+            <select id="song-filter-artist" onchange="filterSongsTable(this.value)"
+              style="font-size:0.8rem;border:1px solid #ddd;border-radius:8px;padding:4px 8px;cursor:pointer;background:#f8f9fb;">
+              <option value="">Tous les artistes</option>
+            </select>
+          </div>
+          <table class="dash-table">
+            <thead><tr><th>Titre</th><th>Artiste</th><th>Durée</th><th>Sources</th><th>Action</th></tr></thead>
+            <tbody id="songs-table"><tr><td colspan="5" style="text-align:center;color:#aaa;padding:1.5rem;">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- ── PANEL: POSTS ── -->
       <div class="dash-panel" id="panel-posts">
         <div class="dash-title">Modération des publications 📝</div>
@@ -465,6 +534,7 @@ $$;</pre>
         document.getElementById(btn.dataset.target).classList.add('active');
         if (btn.dataset.target === 'panel-events')  loadEventsPanel();
         if (btn.dataset.target === 'panel-artists') loadArtistsPanel();
+        if (btn.dataset.target === 'panel-songs')   loadSongsPanel();
         if (btn.dataset.target === 'panel-posts')   loadPostsPanel();
         if (btn.dataset.target === 'panel-users')   loadUsersPanel();
         if (btn.dataset.target === 'panel-analytics') loadAnalyticsPanel();
@@ -545,6 +615,37 @@ $$;</pre>
       document.getElementById('ar-image').value = '';
       document.getElementById('ar-image-preview').style.display = 'none';
       loadArtistsPanel();
+    });
+
+    // ── Formulaire Chanson ──
+    document.getElementById('form-add-song')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-add-song');
+      const artistId = document.getElementById('song-artist-id').value;
+      const title    = document.getElementById('song-title').value.trim();
+      if (!artistId) { showToast('Choisis un artiste', 'error'); return; }
+      if (!title)    { showToast('Le titre est obligatoire', 'error'); return; }
+
+      btn.disabled = true; btn.textContent = 'Ajout…';
+
+      const { error } = await _supabase.from('songs').insert({
+        artist_id:    artistId,
+        title:        title,
+        duration:     document.getElementById('song-duration').value.trim() || null,
+        youtube_url:  document.getElementById('song-youtube').value.trim() || null,
+        spotify_url:  document.getElementById('song-spotify').value.trim() || null,
+        audio_url:    document.getElementById('song-audio').value.trim() || null,
+        cover_url:    document.getElementById('song-cover').value.trim() || null,
+        release_year: parseInt(document.getElementById('song-year').value) || null,
+      });
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-plus"></i> Ajouter la chanson';
+
+      if (error) { showToast(error.message, 'error'); return; }
+      showToast('Chanson ajoutée ! ✓');
+      e.target.reset();
+      loadSongsPanel();
     });
 
     // Auto-slug depuis le nom
@@ -863,6 +964,81 @@ $$;</pre>
     if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
     btn.closest('tr').remove();
     showToast('Message supprimé');
+  }
+
+  // ════════════════════════════════════
+  // PANEL CHANSONS
+  // ════════════════════════════════════
+  var _allSongs   = [];
+  var _artistsMap = {};  // id → name
+
+  async function loadSongsPanel() {
+    // Charge les artistes pour le select
+    const { data: artists } = await _supabase.from('artists').select('id, name').order('name');
+
+    // Remplit les selects artiste
+    const selAdd    = document.getElementById('song-artist-id');
+    const selFilter = document.getElementById('song-filter-artist');
+    if (selAdd && artists) {
+      _artistsMap = {};
+      artists.forEach(a => { _artistsMap[a.id] = a.name; });
+      selAdd.innerHTML    = '<option value="">— Choisir un artiste —</option>' +
+        artists.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+      selFilter.innerHTML = '<option value="">Tous les artistes</option>' +
+        artists.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+    }
+
+    // Charge toutes les chansons
+    const { data: songs } = await _supabase.from('songs')
+      .select('*, artists:artist_id(name)')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    _allSongs = songs || [];
+    renderSongsTable(_allSongs);
+  }
+
+  function filterSongsTable(artistId) {
+    const filtered = artistId
+      ? _allSongs.filter(s => s.artist_id === artistId)
+      : _allSongs;
+    renderSongsTable(filtered);
+  }
+
+  function renderSongsTable(songs) {
+    document.getElementById('songs-table').innerHTML = songs.map(s => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img src="${s.cover_url || 'https://ui-avatars.com/api/?name='+encodeURIComponent(s.title)+'&background=CE1126&color=fff&size=40&bold=true'}"
+              style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;">
+            <div>
+              <div style="font-weight:600;font-size:0.88rem;">${escDash(s.title)}</div>
+              ${s.release_year ? `<div style="font-size:0.72rem;color:var(--text-light);">${s.release_year}</div>` : ''}
+            </div>
+          </div>
+        </td>
+        <td style="font-size:0.85rem;">${s.artists?.name || _artistsMap[s.artist_id] || '—'}</td>
+        <td style="font-size:0.85rem;">${s.duration || '—'}</td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${s.youtube_url ? `<a href="${s.youtube_url}" target="_blank" style="background:rgba(206,17,38,0.08);color:#CE1126;border-radius:6px;padding:2px 8px;font-size:0.72rem;text-decoration:none;"><i class="fab fa-youtube"></i> YT</a>` : ''}
+            ${s.spotify_url ? `<a href="${s.spotify_url}" target="_blank" style="background:rgba(29,185,84,0.08);color:#1DB954;border-radius:6px;padding:2px 8px;font-size:0.72rem;text-decoration:none;"><i class="fab fa-spotify"></i> Spotify</a>` : ''}
+            ${s.audio_url   ? `<span style="background:rgba(0,120,71,0.08);color:var(--green);border-radius:6px;padding:2px 8px;font-size:0.72rem;"><i class="fas fa-music"></i> Audio</span>` : ''}
+            ${!s.youtube_url && !s.spotify_url && !s.audio_url ? '<span style="color:#ccc;font-size:0.75rem;">Aucune source</span>' : ''}
+          </div>
+        </td>
+        <td><button class="btn-del" onclick="deleteSong('${s.id}',this)"><i class="fas fa-trash"></i></button></td>
+      </tr>`).join('')
+      || '<tr><td colspan="5" style="text-align:center;color:#aaa;">Aucune chanson</td></tr>';
+  }
+
+  async function deleteSong(id, btn) {
+    if (!confirm('Supprimer cette chanson ?')) return;
+    const { error } = await _supabase.from('songs').delete().eq('id', id);
+    if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
+    btn.closest('tr').remove();
+    showToast('Chanson supprimée');
   }
 
   function escDash(t) {
